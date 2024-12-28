@@ -4,12 +4,23 @@ const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
+const dotenv = require("dotenv");
+dotenv.config();
 
 const organizationRouter = require("./routes/organization");
 const roleRouter = require("./routes/role");
 const employeeRouter = require("./routes/employee");
 const departmentRouter = require("./routes/department");
 const managerRouter = require("./routes/manager");
+
+const bcrypt = require("bcrypt");
+
+const check = async () => {
+  bcrypt.genSalt(10, (err, salt) => {
+    console.log(bcrypt.hashSync("test", salt));
+  });
+};
+check();
 
 const app = express();
 

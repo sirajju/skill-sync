@@ -30,18 +30,13 @@ const getDepartmentDetails = async (req, res) => {
 };
 
 const createDepartment = async (req, res) => {
-  const { name, skills, managerId } = req.body;
-  if (!name || !skills?.length || !managerId)
-    throw new Error("Invalid department");
+  const { name, skills, orgId } = req.body;
+  if (!name || !skills?.length) throw new Error("Invalid department");
   const data = await Prisma.department.create({
     data: {
       name,
+      orgId,
       requiredSkills: skills,
-      Manager: {
-        connect: {
-          id: managerId,
-        },
-      },
     },
   });
   return res.json({ data });

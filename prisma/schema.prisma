@@ -21,7 +21,9 @@ model Organization {
 model Manager {
   id           String     @unique @default(uuid())
   name         String
-  email        String
+  password     String
+  auth         Json?
+  email        String     @unique
   departmentId String
   Department   Department @relation(fields: [departmentId], references: [id])
   createdAt    DateTime   @default(now())
@@ -31,7 +33,8 @@ model Manager {
 model Employee {
   id                         String               @unique @default(uuid())
   name                       String
-  email                      String
+  email                      String               @unique
+  password                   String
   age                        Int
   goals                      Json
   Organization               Organization         @relation(fields: [orgId], references: [id])
@@ -76,14 +79,15 @@ model Badge {
 }
 
 model Department {
-  id           String       @unique @default(uuid())
-  name         String?
-  Employee     Employee[]
-  Organization Organization @relation(fields: [orgId], references: [id])
-  orgId        String
-  Manager      Manager[]
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id             String       @unique @default(uuid())
+  name           String?
+  Employee       Employee[]
+  Organization   Organization @relation(fields: [orgId], references: [id])
+  orgId          String
+  requiredSkills Json
+  Manager        Manager[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
 
 model Assesments {

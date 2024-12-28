@@ -1,4 +1,6 @@
 const { getPrismaClient } = require("../config/prisma");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const Prisma = getPrismaClient();
 
@@ -22,20 +24,54 @@ const getManagerDetails = async (req, res) => {
 };
 
 const createManager = async (req, res) => {
-  const { name, departmentId, email } = req.body;
+  const { name, departmentId, email, password } = req.body;
   if (!departmentId) throw new Error("Invalid Department");
+  const hashedPassword = await bcrypt.hashSync(
+    password,
+    process.env.BCRYPT_SALT
+  );
   const data = await Prisma.manager.create({
     data: {
       name,
       email,
       departmentId,
+      password: hashedPassword,
     },
   });
   return res.json({ data });
+};
+
+const loginManager = async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) throw new Error("Invalid email or password");
+  const data = await Prisma.manager.findUnique({
+    where: {
+      email,
+    },
+    include: {
+      Department: {
+        include: {
+          Organization: true,
+        },
+      },
+    },
+  });
+  if (!data) res.json({ message: "No data" });
+  const isPasswordMatched = bcrypt.compareSync(password, data.password);
+  if (!isPasswordMatched) res.json({ message: "No data" });
+  const token = await jwt.sign(
+    {
+      id: data.Department.orgId,
+      ...data,
+    },
+    process.env.JWT_SECRET
+  );
+  res.json({ data: token });
 };
 
 module.exports = {
   getManagerDetails,
   createManager,
   listManagers,
+  loginManager,
 };
