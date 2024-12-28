@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        String     @unique @default(uuid())
+  name      String?
+  team      Json?
+  goals     Json?
+  Employee  Employee[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Employee {
+  id             String       @unique @default(uuid())
+  name           String
+  email          String
+  age            Int
+  goals          Json
+  organization   Organization @relation(fields: [orgId], references: [id])
+  role           Roles        @relation(fields: [roleId], references: [id])
+  roleId         String
+  points         Int?         @default(0)
+  currentBadgeId String?
+  availedBadges  Json?
+  orgId          String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  employeeId     String?
+  badgeId        String?
+}
+
+model Roles {
+  id             String     @unique @default(uuid())
+  name           String
+  requiredSkills Json
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  Employee       Employee[]
+}
+
+model Badge {
+  id        String   @unique @default(uuid())
+  minPoints Int
+  name      String
+  minRank   Int?
+  maxPoints Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
