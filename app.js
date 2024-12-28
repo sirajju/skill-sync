@@ -8,6 +8,8 @@ const logger = require("morgan");
 const organizationRouter = require("./routes/organization");
 const roleRouter = require("./routes/role");
 const employeeRouter = require("./routes/employee");
+const departmentRouter = require("./routes/department");
+const managerRouter = require("./routes/manager");
 
 const app = express();
 
@@ -26,6 +28,8 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/organization", organizationRouter);
 app.use("/role", roleRouter);
 app.use("/employee", employeeRouter);
+app.use("/department", departmentRouter);
+app.use("/manager", managerRouter);
 
 app.use(function (req, res, next) {
   next(createError(404));
