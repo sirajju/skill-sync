@@ -8,13 +8,14 @@ datasource db {
 }
 
 model Organization {
-  id        String     @unique @default(uuid())
-  name      String?
-  team      Json?
-  goals     Json?
-  Employee  Employee[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id         String       @unique @default(uuid())
+  name       String?
+  team       Json?
+  goals      Json?
+  Employee   Employee[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  Department Department[]
 }
 
 model Employee {
@@ -34,6 +35,8 @@ model Employee {
   updatedAt      DateTime     @updatedAt
   employeeId     String?
   badgeId        String?
+  departmentId   String?
+  Department     Department?  @relation(fields: [departmentId], references: [id])
 }
 
 model Roles {
@@ -53,4 +56,12 @@ model Badge {
   maxPoints Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Department {
+  id           String       @unique @default(uuid())
+  name         String?
+  Employee     Employee[]
+  Organization Organization @relation(fields: [orgId], references: [id])
+  orgId        String
 }
