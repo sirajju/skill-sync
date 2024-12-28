@@ -29,26 +29,30 @@ model Manager {
 }
 
 model Employee {
-  id                         String       @unique @default(uuid())
+  id                         String               @unique @default(uuid())
   name                       String
   email                      String
   age                        Int
   goals                      Json
-  organization               Organization @relation(fields: [orgId], references: [id])
-  role                       Roles        @relation(fields: [roleId], references: [id])
+  organization               Organization         @relation(fields: [orgId], references: [id])
+  role                       Roles                @relation(fields: [roleId], references: [id])
   completedAssesments        Json?
   isLatestAssesmentCompleted Boolean?
   roleId                     String
-  points                     Int?         @default(0)
+  points                     Int?                 @default(0)
+  leaderboardRank            Int?
   currentBadgeId             String?
   availedBadges              Json?
   orgId                      String
-  createdAt                  DateTime     @default(now())
-  updatedAt                  DateTime     @updatedAt
+  createdAt                  DateTime             @default(now())
+  updatedAt                  DateTime             @updatedAt
   employeeId                 String?
   badgeId                    String?
+  // Away from keyboard (Cannot do tasks cz of any personal or anything)
+  isAfk                      Boolean?
   departmentId               String?
-  Department                 Department?  @relation(fields: [departmentId], references: [id])
+  Department                 Department?          @relation(fields: [departmentId], references: [id])
+  PerformanceMetrics         PerformanceMetrics[]
 }
 
 model Roles {
@@ -93,7 +97,20 @@ model Assesments {
   aiPrompt          String?
   aiReponse         String?
   questions         Json?
+  isApproved        Boolean?
+  expireAt          DateTime
+  isExpired         Boolean?
+  isActive          Boolean  @default(true)
   data              Json
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+}
+
+model PerformanceMetrics {
+  id         String   @unique @default(uuid())
+  employeeId String
+  Employee   Employee @relation(fields: [employeeId], references: [id])
+  metrics    Json // Productivity metrics data
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
