@@ -34,7 +34,7 @@ model Employee {
   email                      String
   age                        Int
   goals                      Json
-  organization               Organization         @relation(fields: [orgId], references: [id])
+  Organization               Organization         @relation(fields: [orgId], references: [id])
   role                       Roles                @relation(fields: [roleId], references: [id])
   completedAssesments        Json?
   isLatestAssesmentCompleted Boolean?

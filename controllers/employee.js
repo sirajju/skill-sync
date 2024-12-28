@@ -15,26 +15,27 @@ const getEmployeeDetails = async (req, res) => {
     where: {
       id,
     },
-    include:{
-      organization:true,
-      role:true,
-    }
+    include: {
+      organization: true,
+      Department: true,
+      role: true,
+    },
   });
   res.json({ data });
 };
 
-// Create an employee under an organization
+// Create an employee under a department
 const createEmployee = async (req, res) => {
-  const { name, goals, orgId, age, email, roleId } = req.body;
-  if (!orgId) throw new Error("Invalid Organization");
+  const { name, goals, departmentId, age, email, roleId } = req.body;
+  if (!departmentId) throw new Error("Invalid Department");
   const data = await Prisma.employee.create({
     data: {
       name,
       email,
       goals,
       age: parseInt(age),
-      orgId,
       roleId,
+      departmentId,
     },
   });
   return res.json({ data });
