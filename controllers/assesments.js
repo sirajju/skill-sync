@@ -23,7 +23,7 @@ const getAssesmentByRole = async (req, res) => {
   if (!roleId) throw new Error("Unknwon id");
   const data = await Prisma.assesments.findUnique({
     where: {
-      id,
+      roleId,
     },
   });
   res.json({ data });

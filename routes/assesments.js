@@ -16,7 +16,7 @@ router.get(
   catchError(assesmentsController.getAssessmentDetails)
 );
 router.get(
-  "/:roleId",
+  "/role/:roleId",
   verifyOrganization,
   catchError(assesmentsController.getAssesmentByRole)
 );
