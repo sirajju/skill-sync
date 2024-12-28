@@ -7,7 +7,6 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const { connect: initRabbitMq } = require("./config/rabbitmq");
-
 const { create } = require("./temp/demo");
 create();
 
@@ -18,6 +17,12 @@ const departmentRouter = require("./routes/department");
 const managerRouter = require("./routes/manager");
 const assesmentsRouter = require("./routes/assesments");
 
+const {
+  onIssueCreated,
+  onIssueUpdated,
+  onOtherEvents,
+} = require("./webhook/events");
+
 const app = express();
 connect();
 initRabbitMq();
@@ -26,7 +31,7 @@ initRabbitMq();
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
-console.clear()
+console.clear();
 
 app.use(logger("dev"));
 app.use(express.json());
@@ -40,6 +45,10 @@ app.use("/employee", employeeRouter);
 app.use("/department", departmentRouter);
 app.use("/manager", managerRouter);
 app.use("/assesment", assesmentsRouter);
+
+app.use("/webhook/issue-created", onIssueCreated);
+app.use("/webhook/issue-updated", onIssueUpdated);
+app.use("/webhook/*", onOtherEvents);
 
 app.use(function (req, res, next) {
   next(createError(404));

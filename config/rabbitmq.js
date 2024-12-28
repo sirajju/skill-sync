@@ -31,10 +31,19 @@ const waitForLoadingResource = () => {
 
 const sendToGemini = async (string) => {
   if (!channel) await waitForLoadingResource();
-  channel.sendToQueue(process.env.GEMINI_QUEUE, string);
+  channel.sendToQueue(process.env.GEMINI_QUEUE, Buffer.from(string));
 };
+
+const listenGemini = async (callBack) => {
+  if (!channel) await waitForLoadingResource();
+  channel.consume(process.env.GEMINI_QUEUE, callBack);
+};
+
+const acknowledgeMsg = (msg) => channel.ack(msg);
 
 module.exports = {
   connect,
   sendToGemini,
+  listenGemini,
+  acknowledgeMsg
 };
