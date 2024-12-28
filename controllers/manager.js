@@ -56,9 +56,9 @@ const loginManager = async (req, res) => {
       },
     },
   });
-  if (!data) res.json({ message: "No data" });
+  if (!data) return res.json({ message: "No data" });
   const isPasswordMatched = bcrypt.compareSync(password, data.password);
-  if (!isPasswordMatched) res.json({ message: "No data" });
+  if (!isPasswordMatched) return res.json({ message: "No data" });
   const token = await jwt.sign(
     {
       id: data.Department.orgId,
@@ -66,7 +66,7 @@ const loginManager = async (req, res) => {
     },
     process.env.JWT_SECRET
   );
-  res.json({ data: token });
+  return res.json({ data: token });
 };
 
 module.exports = {

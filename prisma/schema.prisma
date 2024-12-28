@@ -25,7 +25,7 @@ model Manager {
   auth         Json?
   email        String     @unique
   departmentId String
-  Department   Department @relation(fields: [departmentId], references: [id])
+  Department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 }
@@ -37,8 +37,8 @@ model Employee {
   password                   String
   age                        Int
   goals                      Json
-  Organization               Organization         @relation(fields: [orgId], references: [id])
-  role                       Roles                @relation(fields: [roleId], references: [id])
+  Organization               Organization         @relation(fields: [orgId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  role                       Roles                @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   completedAssesments        Json?
   isLatestAssesmentCompleted Boolean?
   roleId                     String
@@ -54,7 +54,7 @@ model Employee {
   // Away from keyboard (Cannot do tasks cz of any personal or anything)
   isAfk                      Boolean?
   departmentId               String?
-  Department                 Department?          @relation(fields: [departmentId], references: [id])
+  Department                 Department?          @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   PerformanceMetrics         PerformanceMetrics[]
 }
 
@@ -82,7 +82,7 @@ model Department {
   id             String       @unique @default(uuid())
   name           String?
   Employee       Employee[]
-  Organization   Organization @relation(fields: [orgId], references: [id])
+  Organization   Organization @relation(fields: [orgId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   orgId          String
   requiredSkills Json
   Manager        Manager[]
@@ -91,10 +91,10 @@ model Department {
 }
 
 model Assesments {
-  id                String   @unique @default(uuid())
+  id                String    @unique @default(uuid())
   name              String?
   roleId            String
-  Role              Roles    @relation(fields: [roleId], references: [id])
+  Role              Roles     @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   totalPoints       Int?
   pointsPerQuestion Int?
   isManuallyAdded   Boolean
@@ -102,18 +102,18 @@ model Assesments {
   aiReponse         String?
   questions         Json?
   isApproved        Boolean?
-  expireAt          DateTime
+  expireAt          DateTime?
   isExpired         Boolean?
-  isActive          Boolean  @default(true)
+  isActive          Boolean   @default(true)
   data              Json
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }
 
 model PerformanceMetrics {
   id         String   @unique @default(uuid())
   employeeId String
-  Employee   Employee @relation(fields: [employeeId], references: [id])
+  Employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   metrics    Json // Productivity metrics data
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

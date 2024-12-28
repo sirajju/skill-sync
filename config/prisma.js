@@ -14,7 +14,7 @@ const connect = async () => {
   isConnecting = true;
   return await prisma
     .$connect()
-    .then((res) => {
+    .then(async(res) => {
       isConnected = true;
       isConnecting = false;
       console.log("PRISMA CONNECTED");

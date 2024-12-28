@@ -24,7 +24,7 @@ const createRole = async (req, res) => {
   const data = await Prisma.roles.create({
     data: {
       name,
-      requiredSkills: skills,
+      requiredSkills: JSON.parse(skills),
     },
   });
   return res.json({ data });

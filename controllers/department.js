@@ -36,7 +36,7 @@ const createDepartment = async (req, res) => {
     data: {
       name,
       orgId,
-      requiredSkills: skills,
+      requiredSkills: JSON.parse(skills),
     },
   });
   return res.json({ data });
