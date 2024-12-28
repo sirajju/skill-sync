@@ -56,6 +56,7 @@ model Employee {
   departmentId               String?
   Department                 Department?          @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   PerformanceMetrics         PerformanceMetrics[]
+  Tasks                      Tasks[]
 }
 
 model Roles {
@@ -117,4 +118,26 @@ model PerformanceMetrics {
   metrics    Json // Productivity metrics data
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model Tasks {
+  id            String   @unique @default(uuid())
+  title         String
+  description   String
+  complexity    Float
+  priority      Priority
+  deadline      DateTime
+  estimatedTime DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  Employee      Employee @relation(fields: [employeeId], references: [id])
+  employeeId    String
+}
+
+enum Priority {
+  LOWEST
+  LOW
+  MEDIUM
+  HIGH
+  HIGHEST
 }

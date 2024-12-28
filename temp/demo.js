@@ -33,6 +33,13 @@ const create = async () => {
   }
 };
 
+const clear = async () => {
+  const organization = await prisma.organization.deleteMany();
+  const department = await prisma.department.deleteMany();
+  const manager = await prisma.manager.deleteMany();
+};
+
 module.exports = {
   create,
+  clear
 };
