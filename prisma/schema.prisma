@@ -9,7 +9,7 @@ datasource db {
 
 model Organization {
   id         String       @unique @default(uuid())
-  name       String?
+  name       String?      @unique
   team       Json?
   goals      Json?
   Employee   Employee[]

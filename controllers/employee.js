@@ -1,5 +1,5 @@
 const { getPrismaClient } = require("../config/prisma");
-
+const bcrypt = require("bcrypt");
 const Prisma = getPrismaClient();
 
 const listEmployees = async (req, res) => {
@@ -26,8 +26,20 @@ const getEmployeeDetails = async (req, res) => {
 
 // Create an employee under a department
 const createEmployee = async (req, res) => {
-  const { name, goals, departmentId, age, email, roleId } = req.body;
+  const {
+    name,
+    goals,
+    departmentId,
+    age,
+    email,
+    roleId,
+    password,
+    orgId = req.auth.orgId,
+  } = req.body;
+
   if (!departmentId) throw new Error("Invalid Department");
+  const hashedPassword = bcrypt.hashSync(password, process.env.BCRYPT_SALT);
+
   const data = await Prisma.employee.create({
     data: {
       name,
@@ -36,6 +48,8 @@ const createEmployee = async (req, res) => {
       age: parseInt(age),
       roleId,
       departmentId,
+      password: hashedPassword,
+      orgId,
     },
   });
   return res.json({ data });

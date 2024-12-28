@@ -15,6 +15,11 @@ router.get(
   verifyOrganization,
   catchError(assesmentsController.getAssessmentDetails)
 );
+router.get(
+  "/:roleId",
+  verifyOrganization,
+  catchError(assesmentsController.getAssesmentByRole)
+);
 router.post(
   "/",
   verifyOrganization,

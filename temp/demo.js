@@ -27,8 +27,9 @@ const create = async () => {
       },
     });
   } catch (error) {
-    console.log('ERR, Never mind . Its me creating (duplicate) demo data');
-    
+    console.warn(
+      "ERR, Never mind . Its me creating (duplicate) demo data ./temp/demo"
+    );
   }
 };
 

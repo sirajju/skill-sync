@@ -21,6 +21,8 @@ const getRoleDetails = async (req, res) => {
 const createRole = async (req, res) => {
   const { name, skills } = req.body;
   if (!name || !skills?.length) throw new Error("Invalid role");
+  console.log(skills);
+
   const data = await Prisma.roles.create({
     data: {
       name,

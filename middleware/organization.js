@@ -14,7 +14,12 @@ module.exports = async (req, res, next) => {
         id: Department.orgId,
       },
     });
-    if (organizationData) return next();
+    if (organizationData) {
+      req.auth = {
+        orgId: organizationData.id,
+      };
+      return next();
+    }
     res.status(400).json({ message: "Session ended" });
   } catch (error) {
     console.log(error);

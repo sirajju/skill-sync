@@ -18,6 +18,17 @@ const getAssessmentDetails = async (req, res) => {
   res.json({ data });
 };
 
+const getAssesmentByRole = async (req, res) => {
+  const { roleId } = req.params;
+  if (!roleId) throw new Error("Unknwon id");
+  const data = await Prisma.assesments.findUnique({
+    where: {
+      id,
+    },
+  });
+  res.json({ data });
+};
+
 const createAssesment = async (req, res) => {
   const {
     name,
@@ -68,4 +79,5 @@ module.exports = {
   getAssessmentDetails,
   createAssesment,
   listAllAssesments,
+  getAssesmentByRole,
 };
