@@ -18,34 +18,47 @@ model Organization {
   Department Department[]
 }
 
+model Manager {
+  id           String     @unique @default(uuid())
+  name         String
+  email        String
+  departmentId String
+  Department   Department @relation(fields: [departmentId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
 model Employee {
-  id             String       @unique @default(uuid())
-  name           String
-  email          String
-  age            Int
-  goals          Json
-  organization   Organization @relation(fields: [orgId], references: [id])
-  role           Roles        @relation(fields: [roleId], references: [id])
-  roleId         String
-  points         Int?         @default(0)
-  currentBadgeId String?
-  availedBadges  Json?
-  orgId          String
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  employeeId     String?
-  badgeId        String?
-  departmentId   String?
-  Department     Department?  @relation(fields: [departmentId], references: [id])
+  id                         String       @unique @default(uuid())
+  name                       String
+  email                      String
+  age                        Int
+  goals                      Json
+  organization               Organization @relation(fields: [orgId], references: [id])
+  role                       Roles        @relation(fields: [roleId], references: [id])
+  completedAssesments        Json?
+  isLatestAssesmentCompleted Boolean?
+  roleId                     String
+  points                     Int?         @default(0)
+  currentBadgeId             String?
+  availedBadges              Json?
+  orgId                      String
+  createdAt                  DateTime     @default(now())
+  updatedAt                  DateTime     @updatedAt
+  employeeId                 String?
+  badgeId                    String?
+  departmentId               String?
+  Department                 Department?  @relation(fields: [departmentId], references: [id])
 }
 
 model Roles {
-  id             String     @unique @default(uuid())
+  id             String       @unique @default(uuid())
   name           String
   requiredSkills Json
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
   Employee       Employee[]
+  Assesments     Assesments[]
 }
 
 model Badge {
@@ -64,4 +77,23 @@ model Department {
   Employee     Employee[]
   Organization Organization @relation(fields: [orgId], references: [id])
   orgId        String
+  Manager      Manager[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Assesments {
+  id                String   @unique @default(uuid())
+  name              String?
+  roleId            String
+  Role              Roles    @relation(fields: [roleId], references: [id])
+  totalPoints       Int?
+  pointsPerQuestion Int?
+  isManuallyAdded   Boolean
+  aiPrompt          String?
+  aiReponse         String?
+  questions         Json?
+  data              Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
