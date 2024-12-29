@@ -16,6 +16,7 @@ const employeeRouter = require("./routes/employee");
 const departmentRouter = require("./routes/department");
 const managerRouter = require("./routes/manager");
 const assesmentsRouter = require("./routes/assesments");
+const jiraRouter = require("./routes/jira");
 
 const {
   onIssueCreated,
@@ -45,6 +46,7 @@ app.use("/employee", employeeRouter);
 app.use("/department", departmentRouter);
 app.use("/manager", managerRouter);
 app.use("/assesment", assesmentsRouter);
+app.use("/jira", jiraRouter);
 
 app.use("/webhook/issue-created", onIssueCreated);
 app.use("/webhook/issue-updated", onIssueUpdated);

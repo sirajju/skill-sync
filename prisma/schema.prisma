@@ -14,6 +14,7 @@ model Organization {
   goals      Json?
   Employee   Employee[]
   createdAt  DateTime     @default(now())
+  cloudId    String?
   updatedAt  DateTime     @updatedAt
   Department Department[]
 }
@@ -35,6 +36,8 @@ model Employee {
   name                       String
   email                      String               @unique
   password                   String
+  auth                       Json
+  cloudId                    String?
   age                        Int
   goals                      Json
   Organization               Organization         @relation(fields: [orgId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -121,17 +124,32 @@ model PerformanceMetrics {
 }
 
 model Tasks {
-  id            String   @unique @default(uuid())
+  id            String    @unique @default(uuid())
   title         String
   description   String
-  complexity    Float
-  priority      Priority
-  deadline      DateTime
-  estimatedTime DateTime
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  Employee      Employee @relation(fields: [employeeId], references: [id])
+  cloudId       String?
+  complexity    Float?
+  webhookData   Json?
+  priority      Priority?
+  deadline      DateTime?
+  estimatedTime DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  Employee      Employee  @relation(fields: [employeeId], references: [id])
   employeeId    String
+}
+
+model Token {
+  id           String   @unique @default(uuid())
+  access_token        String
+  cloudId      String?
+  refreshToken String?
+  scope        String?
+  expires_in   Int?
+  expires_at   DateTime
+  type         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 enum Priority {
