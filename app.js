@@ -21,6 +21,7 @@ const jiraRouter = require("./routes/jira");
 const {
   onIssueCreated,
   onIssueUpdated,
+  onIssueDeleted,
   onOtherEvents,
 } = require("./webhook/events");
 
@@ -50,6 +51,7 @@ app.use("/jira", jiraRouter);
 
 app.use("/webhook/issue-created", onIssueCreated);
 app.use("/webhook/issue-updated", onIssueUpdated);
+app.use("/webhook/issue-deleted", onIssueDeleted);
 app.use("/webhook/*", onOtherEvents);
 
 app.use(function (req, res, next) {

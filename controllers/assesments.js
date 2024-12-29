@@ -36,6 +36,8 @@ const createAssesment = async (req, res) => {
     generateByAi,
     difficulty = "medium",
     totalPoints,
+    pointsPerQuestion,
+    questions,
   } = req.body;
 
   const roleData = await Prisma.roles.findUnique({

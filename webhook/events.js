@@ -4,11 +4,14 @@ const Prisma = getPrismaClient();
 
 const onIssueCreated = (req, res) => {
   const data = {
-    createdAt:new Date(issue_created.timestamp)
-  }
+    createdAt: new Date(issue_created.timestamp),
+  };
   res.status(200).json({ success: true });
 };
 const onIssueUpdated = (req, res) => {
+  res.status(200).json({ success: true });
+};
+const onIssueDeleted = (req, res) => {
   res.status(200).json({ success: true });
 };
 const onOtherEvents = (req, res) => {
@@ -19,4 +22,5 @@ module.exports = {
   onIssueCreated,
   onIssueUpdated,
   onOtherEvents,
+  onIssueDeleted,
 };
