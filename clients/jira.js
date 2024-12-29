@@ -65,7 +65,7 @@ const TokenManager = {
 
 const verifyToken = async (req, res, next) => {
   try {
-    const cloudId = req.headers["x-cloud-id"];
+    const cloudId = req.auth?.orgId || req.headers["x-cloud-id"];
     const tokenData = await TokenManager.readToken(cloudId);
 
     if (!tokenData || !tokenData.access_token) {
@@ -120,8 +120,6 @@ const JiraClient = {
           },
         }
       );
-
-      console.log("Accessible resources:", response.data);
 
       if (!response.data || response.data.length === 0) {
         throw new Error("No Jira cloud instances found");
@@ -228,7 +226,7 @@ const authenticate = async (req, res, next) => {
       }
     );
 
-    const cloudId = JiraClient.getCloudId(response.data.access_token);
+    const cloudId = await JiraClient.getCloudId(response.data.access_token);
 
     const tokenData = {
       access_token: response.data.access_token,
@@ -244,14 +242,18 @@ const authenticate = async (req, res, next) => {
 
     const data = await Prisma.token.create({
       data: {
-        access_token: tokenData.access_token,
+        access_token: {
+          value: tokenData.access_token,
+        },
         ...(tokenData.refresh_token && {
-          refresh_token: tokenData.refresh_token,
+          refresh_token: {
+            value: tokenData.refresh_token,
+          },
         }),
         expires_at: new Date(tokenData.expires_at),
         scope: tokenData.scope,
         type: tokenData.type,
-        cloud_id: tokenData.cloudId,
+        cloudId: tokenData.cloudId,
       },
     });
 

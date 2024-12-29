@@ -141,9 +141,9 @@ model Tasks {
 
 model Token {
   id           String   @unique @default(uuid())
-  access_token        String
+  access_token Json
   cloudId      String?
-  refreshToken String?
+  refreshToken Json?
   scope        String?
   expires_in   Int?
   expires_at   DateTime
