@@ -18,12 +18,7 @@ const managerRouter = require("./routes/manager");
 const assesmentsRouter = require("./routes/assesments");
 const jiraRouter = require("./routes/jira");
 
-const {
-  onIssueCreated,
-  onIssueUpdated,
-  onIssueDeleted,
-  onOtherEvents,
-} = require("./webhook/events");
+const { onTrigger } = require("./webhook/events");
 
 const app = express();
 connect();
@@ -48,10 +43,7 @@ app.use("/manager", managerRouter);
 app.use("/assesment", assesmentsRouter);
 app.use("/jira", jiraRouter);
 
-app.use("/webhook/issue-created", onIssueCreated);
-app.use("/webhook/issue-updated", onIssueUpdated);
-app.use("/webhook/issue-deleted", onIssueDeleted);
-app.use("/webhook/*", onOtherEvents);
+app.use("/webhook/*", onTrigger);
 
 app.use(function (req, res, next) {
   next(createError(404));

@@ -173,8 +173,6 @@ const JiraClient = {
   },
   async createWebhook(accessToken, cloudId, webhookData) {
     const url = `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/webhook`;
-    // const url =
-    // "https://hackathon-webhook-test/rest/webhooks/1.0/webhook";
     console.log("Creating webhook at URL:", url);
 
     return axios.post(url, webhookData, {
@@ -184,6 +182,27 @@ const JiraClient = {
         "Content-Type": "application/json",
       },
     });
+  },
+  async listWebhooks(accessToken, cloudId) {
+    const url = `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/webhook`;
+
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "application/json",
+        },
+      });
+
+      return response;
+    } catch (error) {
+      console.error("Webhook listing failed:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+      });
+      throw error;
+    }
   },
   async extendLifecycle(accessToken, cloudId, webhookIds) {
     const url = `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/webhook/refresh`;
@@ -260,7 +279,6 @@ const authenticate = async (req, res, next) => {
     );
 
     const cloudId = await JiraClient.getCloudId(response.data.access_token);
-
     const data = {
       access_token: response.data.access_token,
       cloudId,

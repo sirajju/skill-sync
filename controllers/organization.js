@@ -23,6 +23,12 @@ const getOrgDetails = async (req, res) => {
 const createOrganization = async (req, res) => {
   const { id } = req.params;
   if (!id) throw new Error("Invalid organization");
+  const isExists = await Prisma.organization.findFirst({
+    where: {
+      cloudId: id,
+    },
+  });
+  if (isExists) return res.redirect(process.env.APP_URL);
   const tokenData = await Prisma.token.findUnique({
     where: {
       cloudId: id,
@@ -35,13 +41,41 @@ const createOrganization = async (req, res) => {
   );
   if (!organizationDetails) throw new Error("Invalid organization details");
   const { name, url, avatarUrl, scopes } = organizationDetails;
-  const data = await Prisma.organization.create({
+  const webHookData = {
+    name: "Issue Created",
+    url: `${process.env.WEBHOOK_BASE_URI}`,
+    webhooks: [
+      {
+        events: [
+          "jira:issue_created",
+          "jira:issue_updated",
+          "jira:issue_deleted",
+        ],
+        jqlFilter: "project = 'TEST'",
+      },
+    ],
+  };
+  const response = await JiraClient.createWebhook(
+    tokenData.access_token,
+    id,
+    webHookData
+  );
+
+  if (response.status !== 200) throw new Error("Error creating webhook");
+
+  const createdWebhooks = await JiraClient.listWebhooks(
+    tokenData.access_token,
+    id
+  );
+
+  await Prisma.organization.create({
     data: {
       cloudId: id,
       name,
+      webhookData: createdWebhooks.data,
     },
   });
-  return res.json({ success: true, data });
+  return res.redirect(process.env.APP_URL);
 };
 
 module.exports = {

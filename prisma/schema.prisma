@@ -13,6 +13,7 @@ model Organization {
   team       Json?
   goals      Json?
   Employee   Employee[]
+  webhookData Json?
   createdAt  DateTime     @default(now())
   cloudId    String?
   updatedAt  DateTime     @updatedAt
