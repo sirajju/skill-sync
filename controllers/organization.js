@@ -1,3 +1,4 @@
+const { JiraClient } = require("../clients/jira");
 const { getPrismaClient } = require("../config/prisma");
 
 const Prisma = getPrismaClient();
@@ -20,15 +21,27 @@ const getOrgDetails = async (req, res) => {
 };
 
 const createOrganization = async (req, res) => {
-  const { name, goals } = req.body;
-  if (!name || !goals?.length) throw new Error("Invalid organization");
-  const data = await Prisma.organization.create({
-    data: {
-      name,
-      goals,
+  const { id } = req.params;
+  if (!id) throw new Error("Invalid organization");
+  const tokenData = await Prisma.token.findUnique({
+    where: {
+      cloudId: id,
     },
   });
-  return res.json({ data });
+  if (!tokenData) throw new Error("Invalid token");
+  const organizationDetails = await JiraClient.getOrganizationDetails(
+    tokenData.access_token,
+    id
+  );
+  if (!organizationDetails) throw new Error("Invalid organization details");
+  const { name, url, avatarUrl, scopes } = organizationDetails;
+  const data = await Prisma.organization.create({
+    data: {
+      cloudId: id,
+      name,
+    },
+  });
+  return res.json({ success: true, data });
 };
 
 module.exports = {

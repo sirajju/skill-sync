@@ -121,6 +121,8 @@ const JiraClient = {
         }
       );
 
+      console.log(response.data);
+
       if (!response.data || response.data.length === 0) {
         throw new Error("No Jira cloud instances found");
       }
@@ -132,6 +134,38 @@ const JiraClient = {
     } catch (error) {
       console.error(
         "Error getting cloud ID:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  },
+  async getOrganizationDetails(accessToken, cloudId) {
+    try {
+      const response = await axios.get(
+        "https://api.atlassian.com/oauth/token/accessible-resources",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      const accessibleOrganizations = response.data;
+      const currentResource = accessibleOrganizations.find(
+        (el) => el.id == cloudId
+      );
+
+      if (!accessibleOrganizations || accessibleOrganizations.length === 0) {
+        throw new Error("No Jira cloud instances found");
+      }
+
+      if (currentResource.id === PROTECTED_CLOUD_ID)
+        throw new Error("Permission denied (Acowebs Jira Cloud)");
+      return currentResource;
+    } catch (error) {
+      console.error(
+        "Error getting org :",
         error.response?.data || error.message
       );
       throw error;
@@ -194,7 +228,6 @@ const getAuthorizationUrl = async (req, res) => {
     `response_type=code&` +
     `prompt=consent&` +
     `state=${encodeURIComponent("abc123")}`;
-  console.log(url);
 
   res.redirect(url);
 };
@@ -240,11 +273,11 @@ const authenticate = async (req, res, next) => {
       type: response.data.token_type,
     };
 
-    const token = await Prisma.token.create({
+    await Prisma.token.create({
       data,
     });
 
-    return res.status(200).json({ success: true, data: token });
+    return res.redirect(`/jira/organization/${cloudId}`);
   } catch (error) {
     console.error(
       "Authentication error:",

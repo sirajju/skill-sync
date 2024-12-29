@@ -142,7 +142,7 @@ model Tasks {
 model Token {
   id           String   @unique @default(uuid())
   access_token String   @db.VarChar(2500)
-  cloudId      String?
+  cloudId      String?  @unique
   refreshToken String?  @db.VarChar(2500)
   scope        String?
   expires_in   Int?
