@@ -228,36 +228,23 @@ const authenticate = async (req, res, next) => {
 
     const cloudId = await JiraClient.getCloudId(response.data.access_token);
 
-    const tokenData = {
+    const data = {
       access_token: response.data.access_token,
       cloudId,
-      scope: response.data.scope,
-      type: response.data.token_type,
-      expires_at: Date.now() + response.data.expires_in * 1000,
+      expires_at: new Date(Date.now() + response.data.expires_in * 1000),
       expires_in: response.data.expires_in,
+      scope: response.data.scope,
       ...(response.data.refresh_token && {
         refresh_token: response.data.refresh_token,
       }),
+      type: response.data.token_type,
     };
 
-    const data = await Prisma.token.create({
-      data: {
-        access_token: {
-          value: tokenData.access_token,
-        },
-        ...(tokenData.refresh_token && {
-          refresh_token: {
-            value: tokenData.refresh_token,
-          },
-        }),
-        expires_at: new Date(tokenData.expires_at),
-        scope: tokenData.scope,
-        type: tokenData.type,
-        cloudId: tokenData.cloudId,
-      },
+    const token = await Prisma.token.create({
+      data,
     });
 
-    return res.status(200).json({ success: true, data });
+    return res.status(200).json({ success: true, data: token });
   } catch (error) {
     console.error(
       "Authentication error:",

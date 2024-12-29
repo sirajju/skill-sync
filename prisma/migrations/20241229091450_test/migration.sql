@@ -5,9 +5,11 @@ CREATE TABLE `Organization` (
     `team` JSON NULL,
     `goals` JSON NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `cloudId` VARCHAR(191) NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `Organization_id_key`(`id`)
+    UNIQUE INDEX `Organization_id_key`(`id`),
+    UNIQUE INDEX `Organization_name_key`(`name`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -31,6 +33,8 @@ CREATE TABLE `Employee` (
     `name` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
+    `auth` JSON NOT NULL,
+    `cloudId` VARCHAR(191) NULL,
     `age` INTEGER NOT NULL,
     `goals` JSON NOT NULL,
     `completedAssesments` JSON NULL,
@@ -100,7 +104,7 @@ CREATE TABLE `Assesments` (
     `aiReponse` VARCHAR(191) NULL,
     `questions` JSON NULL,
     `isApproved` BOOLEAN NULL,
-    `expireAt` DATETIME(3) NOT NULL,
+    `expireAt` DATETIME(3) NULL,
     `isExpired` BOOLEAN NULL,
     `isActive` BOOLEAN NOT NULL DEFAULT true,
     `data` JSON NOT NULL,
@@ -121,23 +125,60 @@ CREATE TABLE `PerformanceMetrics` (
     UNIQUE INDEX `PerformanceMetrics_id_key`(`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- AddForeignKey
-ALTER TABLE `Manager` ADD CONSTRAINT `Manager_departmentId_fkey` FOREIGN KEY (`departmentId`) REFERENCES `Department`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+-- CreateTable
+CREATE TABLE `Tasks` (
+    `id` VARCHAR(191) NOT NULL,
+    `title` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NOT NULL,
+    `cloudId` VARCHAR(191) NULL,
+    `complexity` DOUBLE NULL,
+    `webhookData` JSON NULL,
+    `priority` ENUM('LOWEST', 'LOW', 'MEDIUM', 'HIGH', 'HIGHEST') NULL,
+    `deadline` DATETIME(3) NULL,
+    `estimatedTime` DATETIME(3) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+    `employeeId` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `Tasks_id_key`(`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Token` (
+    `id` VARCHAR(191) NOT NULL,
+    `access_token` VARCHAR(2500) NOT NULL,
+    `cloudId` VARCHAR(191) NULL,
+    `refreshToken` VARCHAR(2500) NULL,
+    `scope` VARCHAR(191) NULL,
+    `expires_in` INTEGER NULL,
+    `expires_at` DATETIME(3) NOT NULL,
+    `type` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `Token_id_key`(`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `Employee` ADD CONSTRAINT `Employee_orgId_fkey` FOREIGN KEY (`orgId`) REFERENCES `Organization`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Manager` ADD CONSTRAINT `Manager_departmentId_fkey` FOREIGN KEY (`departmentId`) REFERENCES `Department`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Employee` ADD CONSTRAINT `Employee_roleId_fkey` FOREIGN KEY (`roleId`) REFERENCES `Roles`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Employee` ADD CONSTRAINT `Employee_orgId_fkey` FOREIGN KEY (`orgId`) REFERENCES `Organization`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Employee` ADD CONSTRAINT `Employee_departmentId_fkey` FOREIGN KEY (`departmentId`) REFERENCES `Department`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `Employee` ADD CONSTRAINT `Employee_roleId_fkey` FOREIGN KEY (`roleId`) REFERENCES `Roles`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Department` ADD CONSTRAINT `Department_orgId_fkey` FOREIGN KEY (`orgId`) REFERENCES `Organization`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Employee` ADD CONSTRAINT `Employee_departmentId_fkey` FOREIGN KEY (`departmentId`) REFERENCES `Department`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Assesments` ADD CONSTRAINT `Assesments_roleId_fkey` FOREIGN KEY (`roleId`) REFERENCES `Roles`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Department` ADD CONSTRAINT `Department_orgId_fkey` FOREIGN KEY (`orgId`) REFERENCES `Organization`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `PerformanceMetrics` ADD CONSTRAINT `PerformanceMetrics_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `Employee`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Assesments` ADD CONSTRAINT `Assesments_roleId_fkey` FOREIGN KEY (`roleId`) REFERENCES `Roles`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `PerformanceMetrics` ADD CONSTRAINT `PerformanceMetrics_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `Employee`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Tasks` ADD CONSTRAINT `Tasks_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `Employee`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
