@@ -1,10 +1,11 @@
 const { getPrismaClient } = require("../config/prisma");
 const Prisma = getPrismaClient();
+const axios = require("axios");
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const REDIRECT_URI =
-  process.env.AUTH_REDIRECT_URI || "http://localhost:3001/authenticate";
+  process.env.AUTH_REDIRECT_URI || "http://localhost:5000/jira/authenticate";
 const PROTECTED_CLOUD_ID = process.env.PROTECTED_CLOUD_ID;
 
 const TokenManager = {
@@ -162,6 +163,16 @@ const JiraClient = {
       },
     });
   },
+  async getAccountDetails(accessToken, accountId) {
+    const url = `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/user?accountId=${accountId}`;
+
+    return axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    });
+  },
 };
 
 const getAuthorizationUrl = async (req, res) => {
@@ -185,6 +196,7 @@ const getAuthorizationUrl = async (req, res) => {
     `response_type=code&` +
     `prompt=consent&` +
     `state=${encodeURIComponent("abc123")}`;
+  console.log(url);
 
   res.redirect(url);
 };

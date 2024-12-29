@@ -38,6 +38,7 @@ const createAssesment = async (req, res) => {
     totalPoints,
     pointsPerQuestion,
     questions,
+    totalQuestions = 10,
   } = req.body;
 
   const roleData = await Prisma.roles.findUnique({
@@ -48,7 +49,7 @@ const createAssesment = async (req, res) => {
 
   if (!roleData) throw new Error("Invalid role id");
   if (generateByAi) {
-    const prompt = `Generate minimum 10 ${difficulty} Question and oneword Answers related to ${roleData.requiredSkills} and also give options. return or repond only in the json format {id:{question,answer,options}} format. Dont need additional show off`;
+    const prompt = `Generate minimum ${totalQuestions} ${difficulty} Question and oneword Answers related to ${roleData.requiredSkills} and also give options. return or repond only in the json format {id:{question,answer,options}} format. Dont need additional show off`;
     sendToGemini(prompt);
     const data = await Prisma.assesments.create({
       data: {
