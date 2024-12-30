@@ -41,8 +41,8 @@ model Employee {
   cloudId                    String?
   age                        Int?
   goals                      Json?
-  Organization               Organization?         @relation(fields: [orgId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  role                       Roles?                @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  Organization               Organization?        @relation(fields: [orgId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  role                       Roles?               @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   completedAssesments        Json?
   isLatestAssesmentCompleted Boolean?
   roleId                     String?
@@ -103,14 +103,15 @@ model Assesments {
   totalPoints       Int?
   pointsPerQuestion Int?
   isManuallyAdded   Boolean
-  aiPrompt          String?
-  aiReponse         String?
+  aiPrompt          String?   @db.VarChar(3000)
+  aiReponse         String?   @db.VarChar(5000)
+  aiJsonResponse    Json?
   questions         Json?
   isApproved        Boolean?
   expireAt          DateTime?
   isExpired         Boolean?
   isActive          Boolean   @default(true)
-  data              Json
+  data              Json?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 }

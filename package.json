@@ -10,6 +10,7 @@
     "studio": "npx prisma studio dev"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "@prisma/client": "^6.1.0",
     "amqplib": "^0.10.5",
     "axios": "^1.7.9",

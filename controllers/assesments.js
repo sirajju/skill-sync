@@ -1,3 +1,4 @@
+const { generate } = require("../config/gemini");
 const { getPrismaClient } = require("../config/prisma");
 const { sendToGemini } = require("../config/rabbitmq");
 const Prisma = getPrismaClient();
@@ -33,10 +34,11 @@ const createAssesment = async (req, res) => {
   const {
     name,
     roleId,
-    generateByAi,
+    generateByAi = true,
     difficulty = "medium",
-    totalPoints,
-    pointsPerQuestion,
+    totalPoints = 100,
+    customPrompt,
+    pointsPerQuestion = 10,
     questions,
     totalQuestions = 10,
   } = req.body;
@@ -49,21 +51,39 @@ const createAssesment = async (req, res) => {
 
   if (!roleData) throw new Error("Invalid role id");
   if (generateByAi) {
-    const prompt = `Generate minimum ${totalQuestions} ${difficulty} Question and oneword Answers related to ${roleData.requiredSkills} and also give options. return or repond only in the json format {id:{question,answer,options}} format. Dont need additional show off`;
-    sendToGemini(prompt);
+    const prompt =
+      customPrompt ||
+      `Generate minimum ${totalQuestions} ${difficulty} Question and oneword Answers related to ${roleData.requiredSkills.toString()} and also give options. return or repond only in the json format {id:{question,answer,options}} format. Dont need additional show off`;
+    const response = await generate(prompt);
+
+    const parsedString = response.slice(
+      response.indexOf("{"),
+      response.lastIndexOf("}") + 1
+    );
+
+    const parsedResponse = JSON.parse(parsedString);
+    const questions = Object.values(parsedResponse).map((item) => {
+      return {
+        question: item.question,
+        answer: item.answer,
+        options: item.options,
+      };
+    });
+
     const data = await Prisma.assesments.create({
       data: {
         name,
         pointsPerQuestion,
         aiPrompt: prompt,
+        aiJsonResponse: parsedResponse,
         isManuallyAdded: false,
         totalPoints,
+        questions,
         roleId,
       },
     });
     return res.json({
       success: true,
-      message: "Generating , We will notify once its created",
       data,
     });
   }
@@ -73,6 +93,8 @@ const createAssesment = async (req, res) => {
       pointsPerQuestion,
       questions,
       isManuallyAdded: true,
+      totalPoints,
+      roleId,
     },
   });
   return res.json({ data });
