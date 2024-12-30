@@ -88,12 +88,6 @@ const verifyToken = async (req, res, next) => {
       req.tokenData = tokenData;
     }
 
-    // Debug log token status
-    console.log("Token verified:", {
-      expires_at: req.tokenData.expires_at,
-      expired: TokenManager.isTokenExpired(req.tokenData),
-    });
-
     next();
   } catch (error) {
     console.error("Token verification error:", error);
@@ -275,6 +269,11 @@ const getAuthorizationUrl = async (req, res) => {
     "read:jira-work",
     "read:field:jira",
     "read:project:jira",
+    "read:jira-user",
+    "read:application-role:jira",
+    "read:group:jira",
+    "read:user:jira",
+    "read:avatar:jira",
   ];
 
   const scopes = encodeURIComponent(temp_scopes.join(" "));
@@ -301,7 +300,6 @@ const authenticate = async (req, res, next) => {
     if (!code) {
       return res.redirect(await getAuthorizationUrl());
     }
-    // Exchange code for token
     const response = await axios.post(
       "https://auth.atlassian.com/oauth/token",
       {
@@ -319,7 +317,7 @@ const authenticate = async (req, res, next) => {
     );
 
     const cloudId = await JiraClient.getCloudId(response.data.access_token);
-    if (!cloudId) throw new Error("No cloud ID found");
+    if (!cloudId) throw new Error("No cloud Id found");
     const data = {
       access_token: response.data.access_token,
       cloudId,
