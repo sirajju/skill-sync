@@ -8,6 +8,7 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const { connect: initRabbitMq } = require("./config/rabbitmq");
 const { create } = require("./temp/demo");
+const cors = require("cors");
 create();
 
 const organizationRouter = require("./routes/organization");
@@ -17,12 +18,13 @@ const departmentRouter = require("./routes/department");
 const managerRouter = require("./routes/manager");
 const assesmentsRouter = require("./routes/assesments");
 const jiraRouter = require("./routes/jira");
-
 const { onTrigger } = require("./webhook/events");
 
 const app = express();
 connect();
-initRabbitMq();
+
+
+// initRabbitMq();
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -30,6 +32,7 @@ app.set("view engine", "ejs");
 
 console.clear();
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());

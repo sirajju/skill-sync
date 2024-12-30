@@ -224,10 +224,21 @@ const JiraClient = {
       },
     });
   },
+  async getEmployeeDetails(accessToken, cloudId) {
+    const url = `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/users/search`;
+
+    return axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    });
+  },
 };
 
 const getAuthorizationUrl = async (req, res) => {
-  const temp_scopes = [
+  const temp_scopes = (process.env.SCOPES &&
+    JSON.parse(process.env.SCOPES)) || [
     "write:webhook:jira",
     "delete:webhook:jira",
     "read:webhook:jira",
@@ -279,6 +290,7 @@ const authenticate = async (req, res, next) => {
     );
 
     const cloudId = await JiraClient.getCloudId(response.data.access_token);
+    if (!cloudId) throw new Error("No cloud ID found");
     const data = {
       access_token: response.data.access_token,
       cloudId,
@@ -295,7 +307,15 @@ const authenticate = async (req, res, next) => {
       data,
     });
 
-    return res.redirect(`/jira/organization/${cloudId}`);
+    console.log("Authentication successful, redirecting to organization");
+
+    const url = `/jira/organization/${cloudId}`;
+
+    res.on("finish", (data) => {
+      console.log(`Redirecting to ${url}`);
+    });
+
+    return res.redirect(url);
   } catch (error) {
     console.error(
       "Authentication error:",

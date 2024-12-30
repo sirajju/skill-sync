@@ -10,8 +10,8 @@ const listAllOrganization = async (req, res) => {
 
 // Temp (need to set auth and get the exact org)
 const getOrgDetails = async (req, res) => {
-  const { id } = req.params;
-  if (!id) throw new Error("Unknwon id");
+  const { orgId } = req.auth;
+  if (!orgId) throw new Error("Unknwon id");
   const data = await Prisma.organization.findUnique({
     where: {
       id,
@@ -22,13 +22,14 @@ const getOrgDetails = async (req, res) => {
 
 const createOrganization = async (req, res) => {
   const { id } = req.params;
-  if (!id) throw new Error("Invalid organization");
+  if (!id || id == "undefined") throw new Error("Invalid organization");
+
   const isExists = await Prisma.organization.findFirst({
     where: {
       cloudId: id,
     },
   });
-  if (isExists) return res.redirect(process.env.APP_URL);
+  if (isExists) return res.json({ message: "Organization already exists" });
   const tokenData = await Prisma.token.findUnique({
     where: {
       cloudId: id,
@@ -68,14 +69,40 @@ const createOrganization = async (req, res) => {
     id
   );
 
-  await Prisma.organization.create({
+  const ORG = await Prisma.organization.create({
     data: {
       cloudId: id,
       name,
       webhookData: createdWebhooks.data,
     },
   });
-  return res.redirect(process.env.APP_URL);
+  const employeeResponse = await JiraClient.getEmployeeDetails(
+    tokenData.access_token,
+    ORG.cloudId
+  );
+  if (!employeeResponse.data) throw new Error("Invalid employee details");
+
+  const employees = employeeResponse.data;
+
+  const atlassianAccounts = employees.filter(
+    (employee) => employee.accountType === "atlassian"
+  );
+
+  for (const employee of atlassianAccounts) {
+    await Prisma.employee.create({
+      data: {
+        name: employee.displayName,
+        email: employee.emailAddress,
+        cloudId: employee.accountId,
+        Organization: {
+          connect: {
+            id: ORG.id,
+          },
+        },
+      },
+    });
+  }
+  return res.json({ message: "Organization created successfully" });
 };
 
 module.exports = {

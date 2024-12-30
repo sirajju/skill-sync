@@ -37,6 +37,9 @@ const clear = async () => {
   const organization = await prisma.organization.deleteMany();
   const department = await prisma.department.deleteMany();
   const manager = await prisma.manager.deleteMany();
+  const employee = await prisma.employee.deleteMany();
+  const token = await prisma.token.deleteMany();
+  console.log("Cleared all data");
 };
 
 module.exports = {

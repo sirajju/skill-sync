@@ -8,16 +8,16 @@ datasource db {
 }
 
 model Organization {
-  id         String       @unique @default(uuid())
-  name       String?      @unique
-  team       Json?
-  goals      Json?
-  Employee   Employee[]
+  id          String       @unique @default(uuid())
+  name        String?      @unique
+  team        Json?
+  goals       Json?
+  Employee    Employee[]
   webhookData Json?
-  createdAt  DateTime     @default(now())
-  cloudId    String?
-  updatedAt  DateTime     @updatedAt
-  Department Department[]
+  createdAt   DateTime     @default(now())
+  cloudId     String?
+  updatedAt   DateTime     @updatedAt
+  Department  Department[]
 }
 
 model Manager {
@@ -36,16 +36,16 @@ model Employee {
   id                         String               @unique @default(uuid())
   name                       String
   email                      String               @unique
-  password                   String
-  auth                       Json
+  password                   String?
+  auth                       Json?
   cloudId                    String?
-  age                        Int
-  goals                      Json
-  Organization               Organization         @relation(fields: [orgId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  role                       Roles                @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  age                        Int?
+  goals                      Json?
+  Organization               Organization?         @relation(fields: [orgId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  role                       Roles?                @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   completedAssesments        Json?
   isLatestAssesmentCompleted Boolean?
-  roleId                     String
+  roleId                     String?
   points                     Int?                 @default(0)
   leaderboardRank            Int?
   currentBadgeId             String?
@@ -145,7 +145,7 @@ model Token {
   access_token String   @db.VarChar(2500)
   cloudId      String?  @unique
   refreshToken String?  @db.VarChar(2500)
-  scope        String?
+  scope        String?  @db.VarChar(2500)
   expires_in   Int?
   expires_at   DateTime
   type         String?
