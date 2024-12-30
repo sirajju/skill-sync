@@ -15,7 +15,7 @@ model Organization {
   Employee    Employee[]
   webhookData Json?
   createdAt   DateTime     @default(now())
-  cloudId     String?
+  cloudId     String?      @unique
   updatedAt   DateTime     @updatedAt
   Department  Department[]
 }
@@ -38,7 +38,7 @@ model Employee {
   email                      String               @unique
   password                   String?
   auth                       Json?
-  cloudId                    String?
+  cloudId                    String?              @unique
   age                        Int?
   goals                      Json?
   Organization               Organization?        @relation(fields: [orgId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -104,7 +104,7 @@ model Assesments {
   pointsPerQuestion Int?
   isManuallyAdded   Boolean
   aiPrompt          String?   @db.VarChar(3000)
-  aiReponse         String?   @db.VarChar(5000)
+  aiResponse        String?   @db.VarChar(5000)
   aiJsonResponse    Json?
   questions         Json?
   isApproved        Boolean?
@@ -125,20 +125,39 @@ model PerformanceMetrics {
   updatedAt  DateTime @updatedAt
 }
 
+model Projects {
+  id             String   @unique @default(uuid())
+  key            String
+  name           String
+  projectTypeKey String?
+  cloudId        String?  @unique
+  description    String?
+  leadId         String?
+  leadName       String?
+  orgId          String?
+  issueTypes     Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  Tasks          Tasks[]
+}
+
 model Tasks {
   id            String    @unique @default(uuid())
   title         String
   description   String
-  cloudId       String?
+  cloudId       String?   @unique
   complexity    Float?
+  projectId     String
+  Project       Projects  @relation(fields: [projectId], references: [id])
   webhookData   Json?
   priority      Priority?
   deadline      DateTime?
   estimatedTime DateTime?
+  isAssigned    Boolean?  @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  Employee      Employee  @relation(fields: [employeeId], references: [id])
-  employeeId    String
+  Employee      Employee?  @relation(fields: [employeeId], references: [id])
+  employeeId    String?
 }
 
 model Token {

@@ -20,6 +20,120 @@ const getOrgDetails = async (req, res) => {
   res.json({ data });
 };
 
+const importIssues = async (cloudId) => {
+  const data = await Prisma.organization.findUnique({
+    where: {
+      cloudId,
+    },
+  });
+  const token = await Prisma.token.findUnique({
+    where: {
+      cloudId,
+    },
+  });
+  const projects = await Prisma.projects.findMany({
+    where: {
+      orgId: data.id,
+    },
+  });
+
+  for (const project of projects) {
+    const response = await JiraClient.getBulkIssues(
+      token.access_token,
+      cloudId,
+      project.name
+    );
+    const issues = response.data.issues;
+
+    for (const issue of issues) {
+      const employee = await Prisma.employee.findUnique({
+        where: {
+          email: issue.fields?.assignee?.emailAddress || "null",
+        },
+      });
+
+      await Prisma.tasks.create({
+        data: {
+          title: issue.fields.summary,
+          description: issue.fields.description
+            ? issue.fields.description.content[0].content[0].text
+            : " Null",
+          cloudId: issue.id,
+          Project: {
+            connect: {
+              id: project.id,
+            },
+          },
+          isAssigned: !!employee,
+          ...(employee && {
+            Employee: {
+              connect: {
+                id: employee.id,
+              },
+            },
+          }),
+        },
+      });
+    }
+  }
+};
+
+const getProject = async (cloudId) => {
+  const data = await Prisma.organization.findUnique({
+    where: {
+      cloudId,
+    },
+  });
+  const token = await Prisma.token.findUnique({
+    where: {
+      cloudId,
+    },
+  });
+  const { data: projects } = await JiraClient.getProjectDetails(
+    token.access_token,
+    cloudId,
+    data.name
+  );
+
+  if (projects) {
+    const projectSelfUrls = projects.map((project) => project.self);
+    const projectDetails = await Promise.all(
+      projectSelfUrls.map((url) =>
+        JiraClient.getProject(url, token.access_token)
+      )
+    );
+    const filteredProjectData = projectDetails.map((project) => project.data);
+
+    if (!filteredProjectData.length) throw new Error("No projects found");
+
+    for (const project of filteredProjectData) {
+      const isExists = await Prisma.projects.findUnique({
+        where: {
+          cloudId: project.id,
+        },
+      });
+
+      if (!isExists) {
+        await Prisma.projects.create({
+          data: {
+            cloudId: project.id,
+            name: project.name,
+            description: project.description,
+            key: project.key,
+            projectTypeKey: project.projectTypeKey,
+            issueTypes: project.issueTypes,
+            orgId: data.id,
+            leadName: project.lead.displayName,
+            leadId: project.lead.accountId,
+          },
+        });
+      }
+    }
+    importIssues(cloudId);
+  }
+  return true;
+};
+
 const createOrganization = async (req, res) => {
   const { id } = req.params;
   if (!id || id == "undefined") throw new Error("Invalid organization");
@@ -76,6 +190,7 @@ const createOrganization = async (req, res) => {
       webhookData: createdWebhooks.data,
     },
   });
+  getProject(id);
   const employeeResponse = await JiraClient.getEmployeeDetails(
     tokenData.access_token,
     ORG.cloudId
@@ -109,4 +224,5 @@ module.exports = {
   getOrgDetails,
   createOrganization,
   listAllOrganization,
+  getProject,
 };

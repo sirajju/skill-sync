@@ -56,36 +56,48 @@ const createAssesment = async (req, res) => {
       `Generate minimum ${totalQuestions} ${difficulty} Question and oneword Answers related to ${roleData.requiredSkills.toString()} and also give options. return or repond only in the json format {id:{question,answer,options}} format. Dont need additional show off`;
     let response = await generate(prompt);
 
-    if (prompt.includes("json")) {
-      response = response.slice(
-        response.indexOf("{"),
-        response.lastIndexOf("}") + 1
-      );
-    }
-    const parsedResponse = JSON.parse(response);
-    const questions = Object.values(parsedResponse).map((item) => {
-      return {
-        question: item.question,
-        answer: item.answer,
-        options: item.options,
-      };
-    });
+    let data = {};
 
-    const data = await Prisma.assesments.create({
-      data: {
+    if (prompt.includes("json")) {
+      response = JSON.parse(
+        response.slice(response.indexOf("{"), response.lastIndexOf("}") + 1)
+      );
+
+      const questions = Object.values(response).map((item) => {
+        return {
+          question: item.question,
+          answer: item.answer,
+          options: item.options,
+        };
+      });
+      data = {
         name,
         pointsPerQuestion,
         aiPrompt: prompt,
-        aiJsonResponse: parsedResponse,
+        aiJsonResponse: response,
         isManuallyAdded: false,
         totalPoints,
         questions,
         roleId,
-      },
+      };
+    } else
+      data = {
+        name,
+        pointsPerQuestion,
+        aiPrompt: prompt,
+        aiResponse: response,
+        isManuallyAdded: false,
+        totalPoints,
+        roleId,
+      };
+
+    const assesmentData = await Prisma.assesments.create({
+      data,
     });
+
     return res.json({
       success: true,
-      data,
+      assesmentData,
     });
   }
   const data = await Prisma.assesments.create({

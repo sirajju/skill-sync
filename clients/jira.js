@@ -234,6 +234,35 @@ const JiraClient = {
       },
     });
   },
+  async getProjectDetails(accessToken, cloudId, hostname) {
+    const url = `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/project`;
+    const test_url = `https://${hostname}.atlassian.net/rest/api/3/project`;
+
+    return axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    });
+  },
+  async getProject(self, accessToken) {
+    return axios.get(self, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    });
+  },
+  async getBulkIssues(accessToken, cloudId, key) {
+    const url = `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/search?jql=project=${key}`;
+
+    return axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    });
+  },
 };
 
 const getAuthorizationUrl = async (req, res) => {
