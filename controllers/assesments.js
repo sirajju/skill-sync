@@ -54,14 +54,15 @@ const createAssesment = async (req, res) => {
     const prompt =
       customPrompt ||
       `Generate minimum ${totalQuestions} ${difficulty} Question and oneword Answers related to ${roleData.requiredSkills.toString()} and also give options. return or repond only in the json format {id:{question,answer,options}} format. Dont need additional show off`;
-    const response = await generate(prompt);
+    let response = await generate(prompt);
 
-    const parsedString = response.slice(
-      response.indexOf("{"),
-      response.lastIndexOf("}") + 1
-    );
-
-    const parsedResponse = JSON.parse(parsedString);
+    if (prompt.includes("json")) {
+      response = response.slice(
+        response.indexOf("{"),
+        response.lastIndexOf("}") + 1
+      );
+    }
+    const parsedResponse = JSON.parse(response);
     const questions = Object.values(parsedResponse).map((item) => {
       return {
         question: item.question,
