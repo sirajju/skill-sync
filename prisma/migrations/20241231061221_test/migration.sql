@@ -10,7 +10,8 @@ CREATE TABLE `Organization` (
     `updatedAt` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `Organization_id_key`(`id`),
-    UNIQUE INDEX `Organization_name_key`(`name`)
+    UNIQUE INDEX `Organization_name_key`(`name`),
+    UNIQUE INDEX `Organization_cloudId_key`(`cloudId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -54,7 +55,8 @@ CREATE TABLE `Employee` (
     `departmentId` VARCHAR(191) NULL,
 
     UNIQUE INDEX `Employee_id_key`(`id`),
-    UNIQUE INDEX `Employee_email_key`(`email`)
+    UNIQUE INDEX `Employee_email_key`(`email`),
+    UNIQUE INDEX `Employee_cloudId_key`(`cloudId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -73,6 +75,7 @@ CREATE TABLE `Badge` (
     `id` VARCHAR(191) NOT NULL,
     `minPoints` INTEGER NOT NULL,
     `name` VARCHAR(191) NOT NULL,
+    `imageUrl` VARCHAR(191) NOT NULL,
     `minRank` INTEGER NULL,
     `maxPoints` INTEGER NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -102,7 +105,8 @@ CREATE TABLE `Assesments` (
     `pointsPerQuestion` INTEGER NULL,
     `isManuallyAdded` BOOLEAN NOT NULL,
     `aiPrompt` VARCHAR(3000) NULL,
-    `aiReponse` VARCHAR(5000) NULL,
+    `aiResponse` VARCHAR(5000) NULL,
+    `aiJsonResponse` JSON NULL,
     `questions` JSON NULL,
     `isApproved` BOOLEAN NULL,
     `expireAt` DATETIME(3) NULL,
@@ -127,21 +131,47 @@ CREATE TABLE `PerformanceMetrics` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `Projects` (
+    `id` VARCHAR(191) NOT NULL,
+    `key` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `projectTypeKey` VARCHAR(191) NULL,
+    `cloudId` VARCHAR(191) NULL,
+    `description` VARCHAR(191) NULL,
+    `leadId` VARCHAR(191) NULL,
+    `leadName` VARCHAR(191) NULL,
+    `orgId` VARCHAR(191) NULL,
+    `issueTypes` JSON NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `Projects_id_key`(`id`),
+    UNIQUE INDEX `Projects_cloudId_key`(`cloudId`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `Tasks` (
     `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
     `description` VARCHAR(191) NOT NULL,
     `cloudId` VARCHAR(191) NULL,
     `complexity` DOUBLE NULL,
+    `projectId` VARCHAR(191) NOT NULL,
     `webhookData` JSON NULL,
+    `aiResponse` VARCHAR(500) NULL,
+    `aiJsonResponse` JSON NULL,
     `priority` ENUM('LOWEST', 'LOW', 'MEDIUM', 'HIGH', 'HIGHEST') NULL,
-    `deadline` DATETIME(3) NULL,
-    `estimatedTime` DATETIME(3) NULL,
+    `minMinutes` INTEGER NOT NULL,
+    `minMinutesString` VARCHAR(191) NULL,
+    `maxMinutes` INTEGER NULL,
+    `maxMinutesString` VARCHAR(191) NULL,
+    `isAssigned` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
-    `employeeId` VARCHAR(191) NOT NULL,
+    `employeeId` VARCHAR(191) NULL,
 
-    UNIQUE INDEX `Tasks_id_key`(`id`)
+    UNIQUE INDEX `Tasks_id_key`(`id`),
+    UNIQUE INDEX `Tasks_cloudId_key`(`cloudId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -183,4 +213,7 @@ ALTER TABLE `Assesments` ADD CONSTRAINT `Assesments_roleId_fkey` FOREIGN KEY (`r
 ALTER TABLE `PerformanceMetrics` ADD CONSTRAINT `PerformanceMetrics_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `Employee`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Tasks` ADD CONSTRAINT `Tasks_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `Employee`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Tasks` ADD CONSTRAINT `Tasks_projectId_fkey` FOREIGN KEY (`projectId`) REFERENCES `Projects`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Tasks` ADD CONSTRAINT `Tasks_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `Employee`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

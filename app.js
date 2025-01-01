@@ -7,7 +7,7 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const { connect: initRabbitMq } = require("./config/rabbitmq");
-const { create } = require("./temp/demo");
+const { create, clear } = require("./temp/demo");
 const cors = require("cors");
 create();
 
@@ -22,7 +22,6 @@ const { onTrigger } = require("./webhook/events");
 
 const app = express();
 connect();
-
 
 // initRabbitMq();
 

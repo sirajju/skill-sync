@@ -1,6 +1,6 @@
 const { JiraClient } = require("../clients/jira");
 const { getPrismaClient } = require("../config/prisma");
-
+const { generate } = require("../config/gemini");
 const Prisma = getPrismaClient();
 
 const listAllOrganization = async (req, res) => {
@@ -52,28 +52,54 @@ const importIssues = async (cloudId) => {
         },
       });
 
-      await Prisma.tasks.create({
-        data: {
-          title: issue.fields.summary,
-          description: issue.fields.description
-            ? issue.fields.description.content[0].content[0].text
-            : " Null",
-          cloudId: issue.id,
-          Project: {
+      const taskData = {
+        title: issue.fields.summary,
+        description: issue.fields.description
+          ? issue.fields.description.content[0].content[0].text
+          : " Null",
+        cloudId: issue.id,
+        Project: {
+          connect: {
+            id: project.id,
+          },
+        },
+        isAssigned: !!employee,
+        ...(!!employee && {
+          Employee: {
             connect: {
-              id: project.id,
+              id: employee.id,
             },
           },
-          isAssigned: !!employee,
-          ...(employee && {
-            Employee: {
-              connect: {
-                id: employee.id,
-              },
-            },
-          }),
-        },
-      });
+        }),
+      };
+
+      const GeminiPrompt = `Provide task complexity,Minimum time to Complete, Maximum time to complete by analyzing the task summary and description.And also please not that the estimated min and max time should be calculated by analyzing the complexity and also the employees break and his/her mental state. I believe that giving a min 3 hour for complexity 1 would be better. and so on. Please provide in json format without addional texts, and the response format should be like this {complexity:Float (0 to 10),minTimeMinutes:Int,minTimeString:String,maxTimeMinutes:Int,maxTimeString:String,...additional_information(add the key if have the value else dont add)} Task Data : ${JSON.stringify(
+        taskData
+      )}`;
+
+      const GeminiResponse = await generate(GeminiPrompt);
+
+      if (GeminiResponse.includes("{")) {
+        const GeminiJsonResponse = JSON.parse(
+          GeminiResponse.slice(
+            GeminiResponse.indexOf("{"),
+            GeminiResponse.lastIndexOf("}") + 1
+          )
+        );
+
+        await Prisma.tasks.create({
+          data: {
+            ...taskData,
+            aiResponse: GeminiResponse,
+            aiJsonResponse: GeminiJsonResponse,
+            minMinutes: GeminiJsonResponse.minTimeMinutes,
+            minMinutesString: GeminiJsonResponse.minTimeString,
+            maxMinutes: GeminiJsonResponse.maxTimeMinutes,
+            maxMinutesString: GeminiJsonResponse.maxTimeString,
+            complexity: GeminiJsonResponse.complexity,
+          },
+        });
+      } else throw new Error("Err while importing tasks");
     }
   }
 };
@@ -190,7 +216,15 @@ const createOrganization = async (req, res) => {
       webhookData: createdWebhooks.data,
     },
   });
-  getProject(id);
+  res.json({
+    message: "Organization created successfully , Projects being imported",
+    success: true,
+  });
+  try {
+    getProject(id);
+  } catch (error) {
+    console.log("Err while imporing", error);
+  }
   const employeeResponse = await JiraClient.getEmployeeDetails(
     tokenData.access_token,
     ORG.cloudId
@@ -217,7 +251,6 @@ const createOrganization = async (req, res) => {
       },
     });
   }
-  return res.json({ message: "Organization created successfully" });
 };
 
 module.exports = {

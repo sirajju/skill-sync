@@ -77,6 +77,7 @@ model Badge {
   id        String   @unique @default(uuid())
   minPoints Int
   name      String
+  imageUrl  String
   minRank   Int?
   maxPoints Int?
   createdAt DateTime @default(now())
@@ -142,22 +143,26 @@ model Projects {
 }
 
 model Tasks {
-  id            String    @unique @default(uuid())
-  title         String
-  description   String
-  cloudId       String?   @unique
-  complexity    Float?
-  projectId     String
-  Project       Projects  @relation(fields: [projectId], references: [id])
-  webhookData   Json?
-  priority      Priority?
-  deadline      DateTime?
-  estimatedTime DateTime?
-  isAssigned    Boolean?  @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  Employee      Employee?  @relation(fields: [employeeId], references: [id])
-  employeeId    String?
+  id               String    @unique @default(uuid())
+  title            String
+  description      String
+  cloudId          String?   @unique
+  complexity       Float?
+  projectId        String
+  Project          Projects  @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  webhookData      Json?
+  aiResponse       String?   @db.VarChar(500)
+  aiJsonResponse   Json?
+  priority         Priority?
+  minMinutes       Int
+  minMinutesString String?
+  maxMinutes       Int?
+  maxMinutesString String?
+  isAssigned       Boolean?  @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  Employee         Employee? @relation(fields: [employeeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  employeeId       String?
 }
 
 model Token {

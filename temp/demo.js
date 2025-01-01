@@ -34,15 +34,19 @@ const create = async () => {
 };
 
 const clear = async () => {
-  const organization = await prisma.organization.deleteMany();
-  const department = await prisma.department.deleteMany();
-  const manager = await prisma.manager.deleteMany();
-  const employee = await prisma.employee.deleteMany();
-  const token = await prisma.token.deleteMany();
+  try {
+    const organization = await prisma.organization.deleteMany();
+    const department = await prisma.department.deleteMany();
+    const manager = await prisma.manager.deleteMany();
+    const employee = await prisma.employee.deleteMany();
+    const token = await prisma.token.deleteMany();
+    const project = await prisma.projects.deleteMany();
+    const tasks = await prisma.tasks.deleteMany();
+  } catch (error) {}
   console.log("Cleared all data");
 };
 
 module.exports = {
   create,
-  clear
+  clear,
 };
