@@ -122,7 +122,7 @@ const JiraClient = {
       }
 
       if (response.data[0].id === PROTECTED_CLOUD_ID)
-        throw new Error("Permission denied (Acowebs Jira Cloud)");
+        throw new Error("Permission denied for safety :) (Acowebs Jira Cloud)");
 
       return response.data[0].id;
     } catch (error) {
@@ -240,15 +240,21 @@ const JiraClient = {
     });
   },
   async getProject(self, accessToken) {
-    return axios.get(self, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: "application/json",
-      },
-    });
+    try {
+      const response = axios.get(self, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "application/json",
+        },
+      });
+
+      return response;
+    } catch (error) {}
   },
   async getBulkIssues(accessToken, cloudId, key) {
-    const url = `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/search?jql=project=${key}`;
+    const url = `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/search?jql=project="${encodeURIComponent(
+      key
+    )}"`;
 
     return axios.get(url, {
       headers: {

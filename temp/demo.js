@@ -7,7 +7,7 @@ const create = async () => {
   try {
     const organization = await prisma.organization.create({
       data: {
-        name: "acodez",
+        name: "acodez-junior",
         goals: ["GO", "JAVASCRIPT"],
       },
     });

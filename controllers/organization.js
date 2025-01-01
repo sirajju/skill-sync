@@ -43,6 +43,8 @@ const importIssues = async (cloudId) => {
       cloudId,
       project.name
     );
+    console.log(response.data);
+
     const issues = response.data.issues;
 
     for (const issue of issues) {
@@ -52,10 +54,13 @@ const importIssues = async (cloudId) => {
         },
       });
 
+      console.log(issue?.fields?.description?.content[0]);
+      
+
       const taskData = {
         title: issue.fields.summary,
         description: issue.fields.description
-          ? issue.fields.description.content[0].content[0].text
+          ? issue.fields.description.content[0].content[0].text?.slice(0, 5000)
           : " Null",
         cloudId: issue.id,
         Project: {
@@ -118,43 +123,55 @@ const getProject = async (cloudId) => {
   const { data: projects } = await JiraClient.getProjectDetails(
     token.access_token,
     cloudId,
-    data.name
+    encodeURIComponent(data.name)
   );
 
   if (projects) {
-    const projectSelfUrls = projects.map((project) => project.self);
-    const projectDetails = await Promise.all(
-      projectSelfUrls.map((url) =>
-        JiraClient.getProject(url, token.access_token)
-      )
-    );
-    const filteredProjectData = projectDetails.map((project) => project.data);
+    try {
+      const projectSelfUrls = projects.map((project) => project.self);
 
-    if (!filteredProjectData.length) throw new Error("No projects found");
-
-    for (const project of filteredProjectData) {
-      const isExists = await Prisma.projects.findUnique({
-        where: {
-          cloudId: project.id,
-        },
+      const projectDetails = await Promise.all(
+        projectSelfUrls.map((url) =>
+          JiraClient.getProject(url, token.access_token)
+        )
+      );
+      const filteredProjectData = projectDetails.map((project) => {
+        return {
+          data: project.data,
+          url: project.url,
+        };
       });
 
-      if (!isExists) {
-        await Prisma.projects.create({
-          data: {
+      if (!filteredProjectData.length) throw new Error("No projects found");
+
+      for (const { data: project, url } of filteredProjectData) {
+        const isExists = await Prisma.projects.findUnique({
+          where: {
             cloudId: project.id,
-            name: project.name,
-            description: project.description,
-            key: project.key,
-            projectTypeKey: project.projectTypeKey,
-            issueTypes: project.issueTypes,
-            orgId: data.id,
-            leadName: project.lead.displayName,
-            leadId: project.lead.accountId,
           },
         });
+
+        if (!isExists) {
+          await Prisma.projects.create({
+            data: {
+              cloudId: project.id,
+              name: project.name,
+              cloudUrl: url,
+              description: project.description,
+              key: project.key,
+              projectTypeKey: project.projectTypeKey,
+              issueTypes: project.issueTypes,
+              orgId: data.id,
+              leadName: project.lead.displayName,
+              leadId: project.lead.accountId,
+            },
+          });
+        }
       }
+    } catch (error) {
+      console.log("Err while getting project details", error.message);
     }
+
     importIssues(cloudId);
   }
   return true;
@@ -163,6 +180,8 @@ const getProject = async (cloudId) => {
 const createOrganization = async (req, res) => {
   const { id } = req.params;
   if (!id || id == "undefined") throw new Error("Invalid organization");
+
+  console.log(`Creating organization with id ${id}`);
 
   const isExists = await Prisma.organization.findFirst({
     where: {
@@ -196,13 +215,9 @@ const createOrganization = async (req, res) => {
       },
     ],
   };
-  const response = await JiraClient.createWebhook(
-    tokenData.access_token,
-    id,
-    webHookData
-  );
+  const response = await true;
 
-  if (response.status !== 200) throw new Error("Error creating webhook");
+  // if (response.status !== 200) throw new Error("Error creating webhook");
 
   const createdWebhooks = await JiraClient.listWebhooks(
     tokenData.access_token,
@@ -216,20 +231,19 @@ const createOrganization = async (req, res) => {
       webhookData: createdWebhooks.data,
     },
   });
-  res.json({
-    message: "Organization created successfully , Projects being imported",
-    success: true,
-  });
   try {
     getProject(id);
   } catch (error) {
-    console.log("Err while imporing", error);
+    console.log("Err while imporing", error.message);
   }
   const employeeResponse = await JiraClient.getEmployeeDetails(
     tokenData.access_token,
     ORG.cloudId
   );
-  if (!employeeResponse.data) throw new Error("Invalid employee details");
+  if (!employeeResponse.data) {
+    console.log("Invalid employee details", employeeResponse);
+    throw new Error("Invalid employee details");
+  }
 
   const employees = employeeResponse.data;
 
@@ -241,7 +255,7 @@ const createOrganization = async (req, res) => {
     await Prisma.employee.create({
       data: {
         name: employee.displayName,
-        email: employee.emailAddress,
+        ...(employee.emailAddress && { email: employee.emailAddress }),
         cloudId: employee.accountId,
         Organization: {
           connect: {
@@ -251,6 +265,11 @@ const createOrganization = async (req, res) => {
       },
     });
   }
+
+  res.json({
+    message: "Organization created successfully , Projects being imported",
+    success: true,
+  });
 };
 
 module.exports = {

@@ -19,6 +19,7 @@ const managerRouter = require("./routes/manager");
 const assesmentsRouter = require("./routes/assesments");
 const jiraRouter = require("./routes/jira");
 const { onTrigger } = require("./webhook/events");
+const { generate } = require("./config/gemini");
 
 const app = express();
 connect();

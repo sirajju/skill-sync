@@ -103,7 +103,7 @@ const createAssesment = async (req, res) => {
     return res.json({
       success: true,
       ...assesmentData,
-      aiPrompt: "Hello World!",
+      aiPrompt: "Nothing here. That’s all we know.",
     });
   }
   const data = await Prisma.assesments.create({
@@ -116,7 +116,57 @@ const createAssesment = async (req, res) => {
       roleId,
     },
   });
-  return res.json({ ...data, aiPrompt: "Hello World!" });
+  return res.json({ ...data, aiPrompt: "Nothing here. That’s all we know." });
+};
+
+const updateAssesment = async (req, res) => {
+  const { id } = req.params;
+  // { empId, questions:{question:string, answer:string}[] }
+  const { empId = "EMP_ID_456", questions } = req.body;
+  if (!id || !empId) throw new Error("Unknwon id");
+  const assesmentData = await Prisma.assesments.findUnique({
+    where: {
+      id,
+    },
+  });
+  if (!assesmentData) throw new Error("Invalid assesment id");
+  const { roleId } = assesmentData;
+  const roleData = await Prisma.roles.findUnique({
+    where: {
+      id: roleId,
+    },
+  });
+
+  const prompt = `Questions and answers are : ${JSON.stringify(
+    questions
+  )} Analyze the answers and questions provided by the employee with id ${empId} for the role ${
+    roleData.name
+  } for the skills ${
+    roleData.requiredSkills
+  } and provide feedback in JSON format: {"feedback":"string",needImprovements:["string (short)", "string (short)",...],suggestedCourses:[]}; ensure the feedback is constructive and accurate. And also suggest some courses for the employee to improve his skills.(dont need direct links. just the course names and the platform to search (udemy prefered))`;
+  const answerPrompt = ` Questions and answers are : ${JSON.stringify(
+    questions
+  )}, Analyze the answers and questions provided by the employee with id ${empId} for the role and provide total points in JSON format: {"score":integer}; ensure the score is accurate.Not that there is a criteria for the score calculation. total points ${
+    assesmentData.totalPoints
+  } and points per question ${assesmentData.pointsPerQuestion}`;
+  let response = await generate(prompt);
+  let answerResponse = await generate(answerPrompt);
+  const isJson = /json/i.test(response);
+  const isAnswerJson = /json/i.test(answerResponse);
+  if (isAnswerJson) {
+    answerResponse = JSON.parse(
+      answerResponse.slice(
+        answerResponse.indexOf("{"),
+        answerResponse.lastIndexOf("}") + 1
+      )
+    );
+  }
+  if (isJson) {
+    response = JSON.parse(
+      response.slice(response.indexOf("{"), response.lastIndexOf("}") + 1)
+    );
+  }
+  res.json({ ...response, ...answerResponse });
 };
 
 module.exports = {
@@ -124,4 +174,5 @@ module.exports = {
   createAssesment,
   listAllAssesments,
   getAssesmentByRole,
+  updateAssesment,
 };

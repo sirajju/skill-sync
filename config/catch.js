@@ -3,6 +3,7 @@ const catchError = (func) => {
     try {
       await func(req, res, next);
     } catch (error) {
+      console.log(error.message);
       res
         .status(500)
         .json({ message: error.message || "Internal server error" });

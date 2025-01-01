@@ -27,8 +27,15 @@ const connect = async () => {
   }
 };
 
+const waitFor3Seconds = () => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, 3000);
+  });
+};
+
 const generate = async (question) => {
   try {
+    await waitFor3Seconds();
     const response = await model.generateContent(question);
     return response.response.text();
   } catch (error) {
