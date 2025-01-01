@@ -166,7 +166,11 @@ const updateAssesment = async (req, res) => {
       response.slice(response.indexOf("{"), response.lastIndexOf("}") + 1)
     );
   }
-  res.json({ ...response, ...answerResponse });
+  res.json({
+    ...response,
+    ...answerResponse,
+    suggestedCoursesLink: roleData.suggestedCourses,
+  });
 };
 
 module.exports = {

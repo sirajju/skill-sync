@@ -19,7 +19,7 @@ const getRoleDetails = async (req, res) => {
 };
 
 const createRole = async (req, res) => {
-  const { name, skills } = req.body;
+  const { name, skills, suggestedCourses } = req.body;
   if (!name || !skills?.length) throw new Error("Invalid role");
   console.log(skills);
 
@@ -27,6 +27,7 @@ const createRole = async (req, res) => {
     data: {
       name,
       requiredSkills: JSON.parse(skills),
+      suggestedCourses: JSON.parse(suggestedCourses),
     },
   });
   return res.json({ data });
