@@ -53,17 +53,20 @@ const createAssesment = async (req, res) => {
   if (generateByAi) {
     const prompt =
       customPrompt ||
-      `Generate minimum ${totalQuestions} ${difficulty} Question and oneword Answers related to ${roleData.requiredSkills.toString()} and also give options. return or repond only in the json format {id:{question,answer,options}} format. Dont need additional show off`;
+      `Generate a minimum of ${totalQuestions} ${difficulty} questions and one-word answers related to ${roleData.requiredSkills.toString()}, include options for each, and respond only in JSON format: {"estimatedTimeString":"exact strict time (e.g., '5 minutes')","estimatedTime":integer (e.g., 5),"id":[{"question":"string","answer":"string","options":["option1","option2","option3","option4"]}]}; ensure time is strict, less than 10 minutes, and varies accurately based on difficulty level.`;
     let response = await generate(prompt);
+    console.log(response);
 
     let data = {};
-
-    if (prompt.includes("json")) {
+    const isJson = /json/i.test(response);
+    if (isJson) {
       response = JSON.parse(
         response.slice(response.indexOf("{"), response.lastIndexOf("}") + 1)
       );
 
-      const questions = Object.values(response).map((item) => {
+      const { estimatedTime, estimatedTimeString, id } = response;
+
+      const questions = Object.values(id).map((item) => {
         return {
           question: item.question,
           answer: item.answer,
@@ -74,6 +77,8 @@ const createAssesment = async (req, res) => {
         name,
         pointsPerQuestion,
         aiPrompt: prompt,
+        estimatedTimeString,
+        estimatedTime,
         aiJsonResponse: response,
         isManuallyAdded: false,
         totalPoints,
@@ -97,7 +102,8 @@ const createAssesment = async (req, res) => {
 
     return res.json({
       success: true,
-      assesmentData,
+      ...assesmentData,
+      aiPrompt: "Hello World!",
     });
   }
   const data = await Prisma.assesments.create({
@@ -110,7 +116,7 @@ const createAssesment = async (req, res) => {
       roleId,
     },
   });
-  return res.json({ data });
+  return res.json({ ...data, aiPrompt: "Hello World!" });
 };
 
 module.exports = {

@@ -105,6 +105,8 @@ CREATE TABLE `Assesments` (
     `pointsPerQuestion` INTEGER NULL,
     `isManuallyAdded` BOOLEAN NOT NULL,
     `aiPrompt` VARCHAR(3000) NULL,
+    `estimatedTime` INTEGER NULL,
+    `estimatedTimeString` VARCHAR(191) NULL,
     `aiResponse` VARCHAR(5000) NULL,
     `aiJsonResponse` JSON NULL,
     `questions` JSON NULL,
