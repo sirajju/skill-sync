@@ -4,29 +4,13 @@ const organizationController = require("../controllers/organization");
 const catchError = require("../config/catch");
 const verifyOrganization = require("../middleware/organization");
 
-const { JiraClient } = require("../clients/jira");
-const { getPrismaClient } = require("../config/prisma");
-
-const Prisma = getPrismaClient();
-
-router.post(
-  "/test",
-  verifyOrganization,
-  catchError(async (req, res) => {
-    const { cloudId } = req.body;
-    
-
-    res.json({ data: projects });
-  })
-);
-
 router.get(
   "/",
   verifyOrganization,
   catchError(organizationController.listAllOrganization)
 );
 router.get(
-  "/",
+  "/:id",
   verifyOrganization,
   catchError(organizationController.getOrgDetails)
 );

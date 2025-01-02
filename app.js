@@ -20,6 +20,7 @@ const assesmentsRouter = require("./routes/assesments");
 const jiraRouter = require("./routes/jira");
 const { onTrigger } = require("./webhook/events");
 const { generate } = require("./config/gemini");
+const expressListRoutes = require("express-list-routes");
 
 const app = express();
 connect();
@@ -47,6 +48,18 @@ app.use("/assesment", assesmentsRouter);
 app.use("/jira", jiraRouter);
 
 app.use("/webhook/*", onTrigger);
+
+app.use("*", (req, res) => {
+  let routes = expressListRoutes(app, { logger: false });
+  if (routes.length)
+    routes = routes.map((route) => {
+      return `${route.method.toUpperCase()} : ${route.path.replaceAll(
+        "\\",
+        "/"
+      )}`;
+    });
+  res.status(200).json({ message: "Server is working , Nothing here", routes });
+});
 
 app.use(function (req, res, next) {
   next(createError(404));

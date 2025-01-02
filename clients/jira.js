@@ -167,7 +167,7 @@ const JiraClient = {
   },
   async createWebhook(accessToken, cloudId, webhookData) {
     const url = `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/webhook`;
-    console.log("Creating webhook at URL:", url);
+    console.log("Creating webhook at url:", url);
 
     return axios.post(url, webhookData, {
       headers: {
@@ -350,10 +350,7 @@ const authenticate = async (req, res, next) => {
 
     return res.redirect(url);
   } catch (error) {
-    console.error(
-      "Authentication error:",
-      error.response?.data || error.message
-    );
+    console.log("Authentication error", error.response?.data || error.message);
     next(error);
   }
 };

@@ -345,6 +345,11 @@ etag@~1.8.1:
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
   integrity sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==
 
+express-list-routes@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/express-list-routes/-/express-list-routes-1.2.4.tgz#72aed0fc70c9c905f1cd0613c9349552cbf40a73"
+  integrity sha512-4XA8l81UA0ZGzh9MO0sj4lUvWmxwSBubg3Ywyq6DJtMUtpmAkNGV3Cnue7SKHdHUaFz3tXgUJ46nwopB4C4voQ==
+
 express@~4.16.1:
   version "4.16.4"
   resolved "https://registry.yarnpkg.com/express/-/express-4.16.4.tgz#fddef61926109e24c515ea97fd2f1bdbf62df12e"
