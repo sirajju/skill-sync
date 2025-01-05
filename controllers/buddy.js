@@ -1,5 +1,5 @@
 const { getPrismaClient } = require("../config/prisma");
-const { generate } = require("../config/gemini");
+const { generate, switchGeminiApikey } = require("../config/gemini");
 const Prisma = getPrismaClient();
 
 const messages = [];
@@ -81,6 +81,16 @@ const chatWithBuddy = async (req, res) => {
       response.slice(response.indexOf("{"), response.lastIndexOf("}") + 1)
     );
     if (response.action?.length) {
+      if (response.action == "INFORM_MANAGER") {
+        await Prisma.employee.update({
+          where: {
+            id: employeeData.id,
+          },
+          data: {
+            isAfk: true,
+          },
+        });
+      }
       response = {
         response: response.response,
         toManager: response.subject || "waiting for confirmation....",
@@ -91,6 +101,9 @@ const chatWithBuddy = async (req, res) => {
   res.json({ ...response });
 };
 
+const switchMe = async (req, res) => res.json({ data: switchGeminiApikey() });
+
 module.exports = {
   chatWithBuddy,
+  switchMe,
 };

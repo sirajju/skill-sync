@@ -1,7 +1,17 @@
 const rabbitmq = require("amqplib");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+let currentApiKey = process.env.GEMINI_API_KEY;
+
+const primarykey = process.env.GEMINI_API_KEY;
+const secondaryApiKey = process.env.GEMINI_SECONDARY_API_KEY;
+
+const switchGeminiApikey = () => {
+  return (currentApiKey =
+    currentApiKey === primarykey ? secondaryApiKey : primarykey);
+};
+
+const genAI = new GoogleGenerativeAI(currentApiKey);
 const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL });
 
 const connect = async () => {
@@ -64,4 +74,5 @@ module.exports = {
   connect,
   generate,
   start,
+  switchGeminiApikey,
 };

@@ -5,6 +5,11 @@ const catchError = require("../config/catch");
 
 const verifyOrganization = require("../middleware/organization");
 
-router.use("/", verifyOrganization, catchError(buddyController.chatWithBuddy));
+router.post("/", verifyOrganization, catchError(buddyController.chatWithBuddy));
+router.post(
+  "/switch",
+  verifyOrganization,
+  catchError(buddyController.switchMe)
+);
 
 module.exports = router;

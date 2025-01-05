@@ -2,6 +2,7 @@ const { getPrismaClient } = require("../config/prisma");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Prisma = getPrismaClient();
+const { generate } = require("../config/gemini");
 
 const listEmployees = async (req, res) => {
   const data = await Prisma.employee.findMany({});
@@ -17,15 +18,15 @@ const getEmployeeDetails = async (req, res) => {
       id,
     },
     include: {
-      organization: true,
       Department: true,
+      Organization: true,
       role: true,
+      Tasks: true,
     },
   });
   res.json({ data });
 };
 
-// Create an employee under a department
 const createEmployee = async (req, res) => {
   const {
     name,
@@ -111,10 +112,68 @@ const loginEmployee = async (req, res) => {
   return res.json({ data: token, ...data });
 };
 
+const getEmployeeStatus = async (req, res) => {
+  const empId = req.auth.empId;
+  const employeeData = await Prisma.employee.findUnique({
+    where: {
+      id: empId,
+    },
+  });
+  const tasksData = await Prisma.tasks.findMany({
+    where: {
+      employeeId: empId,
+    },
+    include: {
+      Project: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+  const closedTasks = [];
+  const openedTasks = [];
+  tasksData.filter((el) =>
+    el.status == "CLOSED" ? closedTasks.push(el) : openedTasks.push(el)
+  );
+  const pendingAssesments = [];
+  const completedAssesments = [];
+  employeeData.assesments.filter((el) =>
+    el.isCompleted ? completedAssesments.push(el) : pendingAssesments.push(el)
+  );
+  const workStatus = employeeData.isAfk
+    ? "Currently unable to work because of some reasons"
+    : "Currently working";
+
+  const data = {
+    closedTasks,
+    openedTasks,
+    pendingAssesments,
+    completedAssesments,
+    workStatus,
+  };
+
+  const prompt = `Analyze employee recent/pending works ${JSON.stringify(
+    data
+  )} and generate a feedback about employee work status of this month ${new Date().toLocaleDateString()}. Reply in mid short`;
+
+  const feedback = await generate(prompt);
+
+  res.json({
+    ...data,
+    closedTasks: closedTasks.length,
+    openedTasks: openedTasks.length,
+    pendingAssesments:pendingAssesments.length,
+    completedAssesments:completedAssesments.length,
+    feedback,
+  });
+};
+
 module.exports = {
   getEmployeeDetails,
   createEmployee,
   listEmployees,
   updateEmployee,
   loginEmployee,
+  getEmployeeStatus,
 };

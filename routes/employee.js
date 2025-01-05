@@ -15,14 +15,13 @@ router.get(
   verifyOrganization,
   catchError(employeeController.getEmployeeDetails)
 );
+router.post("/status", verifyOrganization,catchError(employeeController.getEmployeeStatus));
 router.post(
   "/",
   verifyOrganization,
   catchError(employeeController.createEmployee)
 );
-
 router.post("/login", catchError(employeeController.loginEmployee));
-
 router.put("/:id", employeeController.updateEmployee);
 
 module.exports = router;
