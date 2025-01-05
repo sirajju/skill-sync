@@ -43,20 +43,30 @@ const importIssues = async (cloudId) => {
       cloudId,
       project.name
     );
-    console.log(response.data);
+    console.log(response.data.issues.map((el) => el.fields));
 
     const issues = response.data.issues;
 
     for (const issue of issues) {
+      const reporter = issue.fields.reporter?.accountId;
+      // Exclude tickets created by bot if Jamsheer acodez is the reporter :)
+      const reporterToExclude =
+        process.env.REPORTER_ID ||
+        "557058:a39f0ae7-2aa7-4fc9-a628-c782a0dd7099";
+
+      if (reporter == reporterToExclude) continue;
       const employee = await Prisma.employee.findUnique({
         where: {
           email: issue.fields?.assignee?.emailAddress || "null",
         },
       });
 
-      console.log(issue?.fields?.description?.content[0]);
-      
-
+      const statuses = {
+        "TO DO": "OPEN",
+        "IN PROGRESS": "IN_PROGRESS",
+        DONE: "DONE",
+        CLOSED: "CLOSED",
+      };
       const taskData = {
         title: issue.fields.summary,
         description: issue.fields.description
@@ -76,15 +86,19 @@ const importIssues = async (cloudId) => {
             },
           },
         }),
+        status: statuses[issue.fields.status.name?.toUpperCase()],
+        priority: issue.fields.priority.name.toUpperCase(),
       };
 
       const GeminiPrompt = `Provide task complexity,Minimum time to Complete, Maximum time to complete by analyzing the task summary and description.And also please not that the estimated min and max time should be calculated by analyzing the complexity and also the employees break and his/her mental state. I believe that giving a min 3 hour for complexity 1 would be better. and so on. Please provide in json format without addional texts, and the response format should be like this {complexity:Float (0 to 10),minTimeMinutes:Int,minTimeString:String,maxTimeMinutes:Int,maxTimeString:String,...additional_information(add the key if have the value else dont add)} Task Data : ${JSON.stringify(
         taskData
       )}`;
 
+      console.log(GeminiPrompt);
+
       const GeminiResponse = await generate(GeminiPrompt);
 
-      if (GeminiResponse.includes("{")) {
+      if (GeminiResponse?.includes("{")) {
         const GeminiJsonResponse = JSON.parse(
           GeminiResponse.slice(
             GeminiResponse.indexOf("{"),
@@ -145,6 +159,23 @@ const getProject = async (cloudId) => {
       if (!filteredProjectData.length) throw new Error("No projects found");
 
       for (const { data: project, url } of filteredProjectData) {
+        const leadData = project.lead;
+
+        const isManagerExists = await Prisma.manager.findUnique({
+          where: {
+            cloudId: leadData.accountId,
+            ...(leadData.email && { email: leadData.email }),
+          },
+        });
+
+        if (!isManagerExists)
+          await Prisma.manager.create({
+            data: {
+              name: leadData.displayName,
+              cloudId: leadData.accountId,
+            },
+          });
+
         const isExists = await Prisma.projects.findUnique({
           where: {
             cloudId: project.id,

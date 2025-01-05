@@ -1,5 +1,6 @@
 const { getPrismaClient } = require("../config/prisma");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const Prisma = getPrismaClient();
 
 const listEmployees = async (req, res) => {
@@ -82,9 +83,38 @@ const updateEmployee = async (req, res) => {
   return res.json({ data });
 };
 
+const loginEmployee = async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) throw new Error("Invalid email or password");
+  const data = await Prisma.employee.findUnique({
+    where: {
+      email,
+    },
+    include: {
+      Organization: true,
+      Department: true,
+      Tasks: true,
+      role: true,
+    },
+  });
+  if (!data) return res.json({ message: "No data" });
+  const isPasswordMatched = bcrypt.compareSync(password, data.password);
+  if (!isPasswordMatched) return res.json({ message: "No data" });
+  const token = await jwt.sign(
+    {
+      id: data.id,
+      orgId: data.Organization.id,
+      ...data,
+    },
+    process.env.JWT_SECRET
+  );
+  return res.json({ data: token, ...data });
+};
+
 module.exports = {
   getEmployeeDetails,
   createEmployee,
   listEmployees,
   updateEmployee,
+  loginEmployee,
 };

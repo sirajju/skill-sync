@@ -18,6 +18,8 @@ const departmentRouter = require("./routes/department");
 const managerRouter = require("./routes/manager");
 const assesmentsRouter = require("./routes/assesments");
 const jiraRouter = require("./routes/jira");
+const buddyRouter = require("./routes/buddy");
+
 const { onTrigger } = require("./webhook/events");
 const { generate } = require("./config/gemini");
 const expressListRoutes = require("express-list-routes");
@@ -46,6 +48,7 @@ app.use("/department", departmentRouter);
 app.use("/manager", managerRouter);
 app.use("/assesment", assesmentsRouter);
 app.use("/jira", jiraRouter);
+app.use("/buddy", buddyRouter);
 
 app.use("/webhook/*", onTrigger);
 

@@ -21,15 +21,16 @@ model Organization {
 }
 
 model Manager {
-  id           String     @unique @default(uuid())
+  id           String      @unique @default(uuid())
   name         String
-  password     String
+  password     String?
+  cloudId      String      @unique
   auth         Json?
-  email        String     @unique
-  departmentId String
-  Department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  email        String?     @unique
+  departmentId String?
+  Department   Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 }
 
 model Employee {
@@ -61,6 +62,7 @@ model Employee {
   Department                 Department?          @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   PerformanceMetrics         PerformanceMetrics[]
   Tasks                      Tasks[]
+  Conversation               Conversation[]
 }
 
 model Roles {
@@ -106,6 +108,7 @@ model Assesments {
   pointsPerQuestion   Int?
   isManuallyAdded     Boolean
   aiPrompt            String?   @db.VarChar(3000)
+  assignedEmployees   Json?     @default("[]")
   estimatedTime       Int?
   estimatedTimeString String?
   aiResponse          String?   @db.VarChar(5000)
@@ -147,25 +150,26 @@ model Projects {
 }
 
 model Tasks {
-  id               String    @unique @default(uuid())
+  id               String      @unique @default(uuid())
   title            String
-  description      String?   @db.VarChar(5000)
-  cloudId          String?   @unique
+  description      String?     @db.VarChar(5000)
+  cloudId          String?     @unique
   complexity       Float?
   projectId        String
-  Project          Projects  @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  Project          Projects    @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   webhookData      Json?
-  aiResponse       String?   @db.VarChar(5000)
+  aiResponse       String?     @db.VarChar(5000)
   aiJsonResponse   Json?
+  status           TaskStatus?
   priority         Priority?
   minMinutes       Int
   minMinutesString String?
   maxMinutes       Int?
   maxMinutesString String?
-  isAssigned       Boolean?  @default(false)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  Employee         Employee? @relation(fields: [employeeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  isAssigned       Boolean?    @default(false)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  Employee         Employee?   @relation(fields: [employeeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   employeeId       String?
 }
 
@@ -182,10 +186,26 @@ model Token {
   updatedAt    DateTime @updatedAt
 }
 
+model Conversation {
+  id        String   @unique @default(uuid())
+  messages  Json?    @default("[]")
+  empId     String   @unique
+  Employee  Employee @relation(fields: [empId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 enum Priority {
   LOWEST
   LOW
   MEDIUM
   HIGH
   HIGHEST
+}
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+  CLOSED
 }

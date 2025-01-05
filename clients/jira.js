@@ -117,14 +117,18 @@ const JiraClient = {
 
       console.log(response.data);
 
+      const withoutProtected = response.data.filter(
+        (el) => el.id != PROTECTED_CLOUD_ID
+      );
+
       if (!response.data || response.data.length === 0) {
         throw new Error("No Jira cloud instances found");
       }
 
-      if (response.data[0].id === PROTECTED_CLOUD_ID)
+      if (withoutProtected[0].id === PROTECTED_CLOUD_ID)
         throw new Error("Permission denied for safety :) (Acowebs Jira Cloud)");
 
-      return response.data[0].id;
+      return withoutProtected[0].id;
     } catch (error) {
       console.error(
         "Error getting cloud ID:",
@@ -155,7 +159,7 @@ const JiraClient = {
       }
 
       if (currentResource.id === PROTECTED_CLOUD_ID)
-        throw new Error("Permission denied (Acowebs Jira Cloud)");
+        throw new Error("Permission denied for safety :) (Acowebs Jira Cloud)");
       return currentResource;
     } catch (error) {
       console.error(

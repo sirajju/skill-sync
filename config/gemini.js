@@ -40,6 +40,11 @@ const generate = async (question) => {
     return response.response.text();
   } catch (error) {
     console.error(error);
+    return JSON.stringify({
+      message:
+        "I am sorry, I am unable to reponse to your query. Please try again later. error : " +
+        error,
+    });
   }
 };
 

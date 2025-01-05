@@ -1,0 +1,60 @@
+module.exports = [
+  {
+    title: "Add navigation back button to every pages",
+    summary:
+      "Pages without navigation is not user friendly. So, add a back button to every pages",
+    priority: "HIGH",
+    status: "OPEN",
+    complexity: 4,
+    minTimeMinutes: 60,
+    minTimeString: "1 hour",
+    maxTimeMinutes: 120,
+    maxTimeString: "2 hours",
+  },
+  {
+    title: "Missing alert when user input is invalid",
+    summary:
+      "When user input is invalid, there is no alert to notify the user. Add an alert to notify the user",
+    priority: "HIGH",
+    status: "OPEN",
+    complexity: 7,
+    minTimeMinutes: 120,
+    minTimeString: "2 hour",
+    maxTimeMinutes: 240,
+    maxTimeString: "4 hours",
+  },
+  {
+    // generate random tasks
+    title: "Add a feature to delete a task",
+    summary: "Add a delete button to every task card to delete the task",
+    priority: "HIGH",
+    status: "OPEN",
+    complexity: 5,
+    minTimeMinutes: 90,
+    minTimeString: "1.5 hour",
+    maxTimeMinutes: 180,
+    maxTimeString: "3 hours",
+  },
+  {
+    title: "Add a feature to edit a task",
+    summary: "Add an edit button to every task card to edit the task",
+    priority: "HIGH",
+    status: "OPEN",
+    complexity: 6,
+    minTimeMinutes: 120,
+    minTimeString: "2 hour",
+    maxTimeMinutes: 240,
+    maxTimeString: "4 hours",
+  },
+  {
+    title: "Add a feature to assign a task",
+    summary:
+      "Add a assign button to every task card to assign the task to a user",
+    priority: "HIGH",
+    status: "OPEN",
+    complexity: 6,
+    minTimeMinutes: 120,
+    minTimeString: "2 hour",
+    maxTimeMinutes: 240,
+  },
+];

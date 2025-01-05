@@ -6,7 +6,7 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "migrate": "npx --offline prisma migrate dev",
-    "generate": "npx prisma generate",
+    "generate": "npx --offline prisma generate",
     "studio": "npx --offline prisma studio dev"
   },
   "dependencies": {

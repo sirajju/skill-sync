@@ -21,6 +21,8 @@ router.post(
   catchError(employeeController.createEmployee)
 );
 
+router.post("/login", catchError(employeeController.loginEmployee));
+
 router.put("/:id", employeeController.updateEmployee);
 
 module.exports = router;
