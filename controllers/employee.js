@@ -133,14 +133,21 @@ const getEmployeeStatus = async (req, res) => {
   });
   const closedTasks = [];
   const openedTasks = [];
-  tasksData.filter((el) =>
-    el.status == "CLOSED" ? closedTasks.push(el) : openedTasks.push(el)
-  );
+  if (tasksData && tasksData.length) {
+    tasksData.filter((el) =>
+      el.status == "CLOSED" ? closedTasks.push(el) : openedTasks.push(el)
+    );
+  }
+
   const pendingAssesments = [];
   const completedAssesments = [];
-  employeeData.assesments.filter((el) =>
-    el.isCompleted ? completedAssesments.push(el) : pendingAssesments.push(el)
-  );
+
+  if (employeeData?.assesments && employeeData.assesments.length) {
+    employeeData.assesments.filter((el) =>
+      el.isCompleted ? completedAssesments.push(el) : pendingAssesments.push(el)
+    );
+  }
+
   const workStatus = employeeData.isAfk
     ? "Currently unable to work because of some reasons"
     : "Currently working";
@@ -163,8 +170,8 @@ const getEmployeeStatus = async (req, res) => {
     ...data,
     closedTasks: closedTasks.length,
     openedTasks: openedTasks.length,
-    pendingAssesments:pendingAssesments.length,
-    completedAssesments:completedAssesments.length,
+    pendingAssesments: pendingAssesments.length,
+    completedAssesments: completedAssesments.length,
     feedback,
   });
 };

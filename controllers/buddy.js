@@ -14,20 +14,20 @@ const chatWithBuddy = async (req, res) => {
   const tasksData = await Prisma.tasks.findMany({
     where: {
       employeeId: empId,
-      status: {
-        not: "CLOSED",
-      },
     },
   });
-  const filteredTask = tasksData.map((el) => {
-    return {
-      title: el.title,
-      description: el.description,
-      status: el.status,
-      priority: el.priority,
-      estimatedTime: el.maxMinutesString,
-    };
-  });
+  const filteredTask = !tasksData
+    ? []
+    : tasksData.map((el) => {
+        return {
+          title: el.title,
+          description: el.description,
+          status: el.status,
+          priority: el.priority,
+          maxAllowedTime: el.maxMinutesString,
+          createdAt: el.createdAt,
+        };
+      });
   const employeeData = await Prisma.employee.findUnique({
     where: {
       id: empId,
@@ -42,9 +42,9 @@ const chatWithBuddy = async (req, res) => {
   });
   const manager = employeeData.Department?.Manager[0].name;
 
-  const assesmentsCount = employeeData.assesments.filter(
-    (el) => !el.isCompleted
-  ).length;
+  const assesmentsCount = !employeeData.assesments
+    ? 0
+    : employeeData.assesments.filter((el) => !el.isCompleted).length;
 
   const getConversation = () => {
     if (messages.length) {
